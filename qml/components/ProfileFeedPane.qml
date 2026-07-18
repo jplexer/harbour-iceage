@@ -30,6 +30,26 @@ SilicaListView {
             onClicked: feed.toggleFollow()
         }
         MenuItem {
+            text: qsTr("Followers (%1)")
+                  .arg(feed.profile.followersCount !== undefined
+                       ? feed.profile.followersCount : 0)
+            onClicked: pageStack.push(Qt.resolvedUrl("../pages/ActorListPage.qml"), {
+                session: feed.session,
+                actor: feed.actor,
+                mode: "followers"
+            })
+        }
+        MenuItem {
+            text: qsTr("Following (%1)")
+                  .arg(feed.profile.followsCount !== undefined
+                       ? feed.profile.followsCount : 0)
+            onClicked: pageStack.push(Qt.resolvedUrl("../pages/ActorListPage.qml"), {
+                session: feed.session,
+                actor: feed.actor,
+                mode: "following"
+            })
+        }
+        MenuItem {
             text: qsTr("Refresh")
             onClicked: feed.refresh()
         }

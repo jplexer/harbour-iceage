@@ -228,6 +228,14 @@
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Followers (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Following (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProfilePage</name>
@@ -244,15 +252,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>%1 posts ·</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>%1 followers ·</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>%1 following</source>
+        <source>%1 posts · %2 followers · %3 following</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
