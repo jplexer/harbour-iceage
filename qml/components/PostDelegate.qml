@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import "linkutils.js" as LinkUtils
 
 // Shared delegate for post list models (timeline, thread, author feed).
 // Expects the roles of AbstractPostModel; set feedModel to the model
@@ -26,23 +27,20 @@ ListItem {
     // Mention and hashtag facets render as bsky.app links; open those
     // in-app (also catches pasted bsky.app profile/hashtag URLs)
     function activateLink(link) {
-        var m = link.match(/^https:\/\/bsky\.app\/profile\/([^\/?#]+)\/?$/)
-        if (m) {
+        var parsed = LinkUtils.parseLink(link)
+        if (parsed.type === "profile") {
             pageStack.push(Qt.resolvedUrl("../pages/ProfilePage.qml"), {
                 session: feedModel.session,
-                actor: decodeURIComponent(m[1])
+                actor: parsed.value
             })
-            return
-        }
-        m = link.match(/^https:\/\/bsky\.app\/hashtag\/([^\/?#]+)/)
-        if (m) {
+        } else if (parsed.type === "hashtag") {
             pageStack.push(Qt.resolvedUrl("../pages/SearchPage.qml"), {
                 session: feedModel.session,
-                initialQuery: "#" + decodeURIComponent(m[1])
+                initialQuery: "#" + parsed.value
             })
-            return
+        } else {
+            Qt.openUrlExternally(link)
         }
-        Qt.openUrlExternally(link)
     }
 
     onClicked: {

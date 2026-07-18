@@ -2,12 +2,30 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.iceage 1.0
 import "../components"
+import "../components/linkutils.js" as LinkUtils
 
 Page {
     id: page
 
     property Session session
     property string actor
+
+    function openLink(link) {
+        var parsed = LinkUtils.parseLink(link)
+        if (parsed.type === "profile") {
+            pageStack.push(Qt.resolvedUrl("ProfilePage.qml"), {
+                session: page.session,
+                actor: parsed.value
+            })
+        } else if (parsed.type === "hashtag") {
+            pageStack.push(Qt.resolvedUrl("SearchPage.qml"), {
+                session: page.session,
+                initialQuery: "#" + parsed.value
+            })
+        } else {
+            Qt.openUrlExternally(link)
+        }
+    }
 
     // The header is glued to the top of the feed content: it scrolls up
     // with the top post until only the tab row remains, and rides back
@@ -121,15 +139,26 @@ Page {
                     maximumLineCount: expanded ? 1000 : 4
                     elide: Text.ElideRight
                     visible: text.length > 0
-                    text: feedPosts.profile.description !== undefined
-                          ? feedPosts.profile.description : ""
+                    textFormat: Text.StyledText
+                    text: LinkUtils.linkify(feedPosts.profile.description !== undefined
+                                            ? feedPosts.profile.description : "")
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.primaryColor
+                    linkColor: Theme.highlightColor
 
+                    // One MouseArea for both jobs: taps on a link open it,
+                    // taps elsewhere toggle the truncated bio
                     MouseArea {
                         anchors.fill: parent
                         enabled: bioLabel.truncated || bioLabel.expanded
-                        onClicked: bioLabel.expanded = !bioLabel.expanded
+                                 || bioLabel.text.indexOf("<a ") >= 0
+                        onClicked: {
+                            var link = bioLabel.linkAt(mouse.x, mouse.y)
+                            if (link.length > 0)
+                                page.openLink(link)
+                            else if (bioLabel.truncated || bioLabel.expanded)
+                                bioLabel.expanded = !bioLabel.expanded
+                        }
                     }
                 }
 
