@@ -198,6 +198,9 @@
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>ProfilePage</name>
     <message>
         <source>Follows you</source>
         <translation type="unfinished"></translation>
