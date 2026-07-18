@@ -289,6 +289,14 @@
         <source>Share post</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Copy link</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Link copied</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProfileFeedPane</name>

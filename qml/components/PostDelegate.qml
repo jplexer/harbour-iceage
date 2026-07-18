@@ -76,6 +76,14 @@ ListItem {
             onClicked: feedModel.toggleLike(index)
         }
         MenuItem {
+            text: qsTr("Copy link")
+            onClicked: {
+                Clipboard.text = "https://bsky.app/profile/" + authorHandle
+                        + "/post/" + uri.split("/").pop()
+                Notices.show(qsTr("Link copied"))
+            }
+        }
+        MenuItem {
             text: qsTr("Share")
             onClicked: {
                 shareAction.resources = [{
