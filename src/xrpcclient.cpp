@@ -68,8 +68,16 @@ QNetworkReply *XrpcClient::get(const QString &nsid, const QVariantMap &params)
 {
     QUrl url(m_service + QStringLiteral("/xrpc/") + nsid);
     QUrlQuery query;
-    for (auto it = params.constBegin(); it != params.constEnd(); ++it)
-        query.addQueryItem(it.key(), it.value().toString());
+    for (auto it = params.constBegin(); it != params.constEnd(); ++it) {
+        if (it.value().type() == QVariant::List) {
+            // Array params repeat the key (e.g. getFeedGenerators feeds)
+            const QVariantList list = it.value().toList();
+            for (const QVariant &value : list)
+                query.addQueryItem(it.key(), value.toString());
+        } else {
+            query.addQueryItem(it.key(), it.value().toString());
+        }
+    }
     url.setQuery(query);
     return m_nam.get(makeRequest(url, QStringLiteral("GET"), m_accessJwt));
 }

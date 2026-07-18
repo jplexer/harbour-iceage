@@ -34,7 +34,8 @@ SOURCES += src/harbour-iceage.cpp \
     src/searchpostsmodel.cpp \
     src/actormodelbase.cpp \
     src/actorsearchmodel.cpp \
-    src/actorlistmodel.cpp
+    src/actorlistmodel.cpp \
+    src/feedlistmodel.cpp
 
 HEADERS += src/xrpcclient.h \
     src/session.h \
@@ -51,7 +52,8 @@ HEADERS += src/xrpcclient.h \
     src/searchpostsmodel.h \
     src/actormodelbase.h \
     src/actorsearchmodel.h \
-    src/actorlistmodel.h
+    src/actorlistmodel.h \
+    src/feedlistmodel.h
 
 DISTFILES += qml/harbour-iceage.qml \
     qml/cover/CoverPage.qml \
@@ -67,6 +69,7 @@ DISTFILES += qml/harbour-iceage.qml \
     qml/pages/VideoPage.qml \
     qml/pages/SearchPage.qml \
     qml/pages/ActorListPage.qml \
+    qml/pages/FeedsPage.qml \
     qml/components/ProfileFeedPane.qml \
     qml/components/ActorDelegate.qml \
     qml/components/linkutils.js \

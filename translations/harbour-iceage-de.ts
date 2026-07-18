@@ -86,6 +86,29 @@
     </message>
 </context>
 <context>
+    <name>FeedsPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Feeds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Following</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No pinned feeds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pin feeds in another Bluesky client to see them here</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>LoginPage</name>
     <message>
         <source>Sign in to Bluesky</source>
@@ -381,6 +404,10 @@
     </message>
     <message>
         <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Feeds</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

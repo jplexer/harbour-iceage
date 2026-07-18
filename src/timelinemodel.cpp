@@ -9,6 +9,39 @@ TimelineModel::TimelineModel(QObject *parent)
 {
 }
 
+void TimelineModel::setFeedUri(const QString &feedUri)
+{
+    if (m_feedUri == feedUri)
+        return;
+    m_feedUri = feedUri;
+    emit feedUriChanged();
+    m_cursor.clear();
+    fetch(true);
+}
+
+void TimelineModel::setFeedName(const QString &feedName)
+{
+    if (m_feedName == feedName)
+        return;
+    m_feedName = feedName;
+    emit feedNameChanged();
+}
+
+QString TimelineModel::endpoint() const
+{
+    return m_feedUri.isEmpty() ? QStringLiteral("app.bsky.feed.getTimeline")
+                               : QStringLiteral("app.bsky.feed.getFeed");
+}
+
+QVariantMap TimelineModel::baseParams() const
+{
+    QVariantMap params;
+    params.insert(QStringLiteral("limit"), 50);
+    if (!m_feedUri.isEmpty())
+        params.insert(QStringLiteral("feed"), m_feedUri);
+    return params;
+}
+
 void TimelineModel::refresh()
 {
     fetch(true);
@@ -30,15 +63,19 @@ void TimelineModel::loadNewer()
         return;
     setLoading(true);
 
-    QVariantMap params;
-    params.insert(QStringLiteral("limit"), 50);
-
     QPointer<TimelineModel> guard(this);
-    session()->getAuthorized(QStringLiteral("app.bsky.feed.getTimeline"), params,
-                             [guard](const QJsonObject &data, const QString &error) {
+    const QString feedUri = m_feedUri;
+    session()->getAuthorized(endpoint(), baseParams(),
+                             [guard, feedUri](const QJsonObject &data, const QString &error) {
         if (!guard)
             return;
         guard->setLoading(false);
+        if (guard->m_feedUri != feedUri) {
+            // Feed switched mid-flight; its own fetch was blocked by the
+            // loading guard, so run it now.
+            guard->fetch(true);
+            return;
+        }
         if (!error.isEmpty()) {
             emit guard->errorOccurred(error);
             return;
@@ -86,19 +123,24 @@ void TimelineModel::fetch(bool reset)
         return;
     setLoading(true);
 
-    QVariantMap params;
-    params.insert(QStringLiteral("limit"), 50);
+    QVariantMap params = baseParams();
     if (!reset)
         params.insert(QStringLiteral("cursor"), m_cursor);
 
     // The model is owned by QML and may be destroyed while the request is in
     // flight; the QPointer guard makes the callback a no-op in that case.
     QPointer<TimelineModel> guard(this);
-    session()->getAuthorized(QStringLiteral("app.bsky.feed.getTimeline"), params,
-                             [guard, reset](const QJsonObject &data, const QString &error) {
+    const QString feedUri = m_feedUri;
+    session()->getAuthorized(endpoint(), params,
+                             [guard, reset, feedUri](const QJsonObject &data,
+                                                     const QString &error) {
         if (!guard)
             return;
         guard->setLoading(false);
+        if (guard->m_feedUri != feedUri) {
+            guard->fetch(true);
+            return;
+        }
         if (!error.isEmpty()) {
             emit guard->errorOccurred(error);
             return;

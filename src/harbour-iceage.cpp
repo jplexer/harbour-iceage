@@ -13,6 +13,7 @@
 #include "actorsearchmodel.h"
 #include "authorfeedmodel.h"
 #include "composer.h"
+#include "feedlistmodel.h"
 #include "notificationsmodel.h"
 #include "searchpostsmodel.h"
 #include "session.h"
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<SearchPostsModel>("harbour.iceage", 1, 0, "SearchPostsModel");
     qmlRegisterType<ActorSearchModel>("harbour.iceage", 1, 0, "ActorSearchModel");
     qmlRegisterType<ActorListModel>("harbour.iceage", 1, 0, "ActorListModel");
+    qmlRegisterType<FeedListModel>("harbour.iceage", 1, 0, "FeedListModel");
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->setSource(SailfishApp::pathToMainQml());

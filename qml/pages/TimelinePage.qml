@@ -25,7 +25,7 @@ Page {
         model: timeline
 
         header: PageHeader {
-            title: "Ice Age"
+            title: timeline.feedUri.length > 0 ? timeline.feedName : "Ice Age"
             description: session.loggedIn ? "@" + session.handle : ""
         }
 
@@ -52,6 +52,14 @@ Page {
                 text: qsTr("Search")
                 visible: session.loggedIn
                 onClicked: pageStack.push(Qt.resolvedUrl("SearchPage.qml"), { session: session })
+            }
+            MenuItem {
+                text: qsTr("Feeds")
+                visible: session.loggedIn
+                onClicked: pageStack.push(Qt.resolvedUrl("FeedsPage.qml"), {
+                    session: session,
+                    timeline: timeline
+                })
             }
             MenuItem {
                 text: notifications.unreadCount > 0
