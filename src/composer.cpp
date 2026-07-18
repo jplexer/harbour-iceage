@@ -169,12 +169,13 @@ QStringList Composer::suggestTags(const QString &prefix) const
 
 void Composer::post(const QString &text, const QString &replyParentUri,
                     const QString &replyParentCid, const QString &replyRootUri,
-                    const QString &replyRootCid)
+                    const QString &replyRootCid, const QString &quoteUri,
+                    const QString &quoteCid)
 {
     if (!m_session || !m_session->loggedIn() || m_busy)
         return;
     const QString trimmed = text.trimmed();
-    if (trimmed.isEmpty() && m_images.isEmpty())
+    if (trimmed.isEmpty() && m_images.isEmpty() && quoteUri.isEmpty())
         return;
     setBusy(true);
 
@@ -183,6 +184,8 @@ void Composer::post(const QString &text, const QString &replyParentUri,
     reply.parentCid = replyParentCid;
     reply.rootUri = replyRootUri;
     reply.rootCid = replyRootCid;
+    reply.quoteUri = quoteUri;
+    reply.quoteCid = quoteCid;
 
     // Resolve every unique mentioned handle to a DID first, then post.
     QStringList handles;
@@ -291,7 +294,30 @@ void Composer::sendRecord(const QString &text, const ReplyRefs &reply,
     if (!facets.isEmpty())
         record.insert(QStringLiteral("facets"), facets);
 
-    if (!imageItems.isEmpty()) {
+    if (!reply.quoteUri.isEmpty()) {
+        QJsonObject ref;
+        ref.insert(QStringLiteral("uri"), reply.quoteUri);
+        ref.insert(QStringLiteral("cid"), reply.quoteCid);
+        QJsonObject recordEmbed;
+        recordEmbed.insert(QStringLiteral("$type"),
+                           QStringLiteral("app.bsky.embed.record"));
+        recordEmbed.insert(QStringLiteral("record"), ref);
+        if (imageItems.isEmpty()) {
+            record.insert(QStringLiteral("embed"), recordEmbed);
+        } else {
+            // Quote plus images combine into recordWithMedia
+            QJsonObject media;
+            media.insert(QStringLiteral("$type"),
+                         QStringLiteral("app.bsky.embed.images"));
+            media.insert(QStringLiteral("images"), imageItems);
+            QJsonObject combined;
+            combined.insert(QStringLiteral("$type"),
+                            QStringLiteral("app.bsky.embed.recordWithMedia"));
+            combined.insert(QStringLiteral("record"), recordEmbed);
+            combined.insert(QStringLiteral("media"), media);
+            record.insert(QStringLiteral("embed"), combined);
+        }
+    } else if (!imageItems.isEmpty()) {
         QJsonObject embed;
         embed.insert(QStringLiteral("$type"), QStringLiteral("app.bsky.embed.images"));
         embed.insert(QStringLiteral("images"), imageItems);

@@ -12,9 +12,13 @@ Page {
     property string replyRootUri
     property string replyRootCid
     property string replyToHandle
+    property string quoteUri
+    property string quoteCid
+    property string quoteAuthorHandle
 
     readonly property int maxLength: 300
     readonly property bool isReply: replyParentUri.length > 0
+    readonly property bool isQuote: quoteUri.length > 0
 
     // Autocomplete for the @mention / #hashtag token at the cursor
     property int _tokenStart: 0
@@ -72,7 +76,9 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: page.isReply ? qsTr("Reply to @%1").arg(replyToHandle) : qsTr("New post")
+                title: page.isReply ? qsTr("Reply to @%1").arg(replyToHandle)
+                     : page.isQuote ? qsTr("Quote @%1").arg(quoteAuthorHandle)
+                                    : qsTr("New post")
             }
 
             TextArea {
@@ -208,12 +214,13 @@ Page {
                 text: page.isReply ? qsTr("Reply") : qsTr("Post")
                 enabled: !composer.busy
                          && (textArea.text.trim().length > 0
-                             || composer.images.length > 0)
+                             || composer.images.length > 0
+                             || page.isQuote)
                          && textArea.text.length <= page.maxLength
                 onClicked: {
                     errorLabel.text = ""
                     composer.post(textArea.text, replyParentUri, replyParentCid,
-                                  replyRootUri, replyRootCid)
+                                  replyRootUri, replyRootCid, quoteUri, quoteCid)
                 }
             }
 

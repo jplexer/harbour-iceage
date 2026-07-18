@@ -33,12 +33,14 @@ public:
     // Hashtag autocomplete from tags seen in parsed posts
     Q_INVOKABLE QStringList suggestTags(const QString &prefix) const;
 
-    // Reply parameters are empty for a top-level post.
+    // Reply/quote parameters are empty for a plain top-level post.
     Q_INVOKABLE void post(const QString &text,
                           const QString &replyParentUri = QString(),
                           const QString &replyParentCid = QString(),
                           const QString &replyRootUri = QString(),
-                          const QString &replyRootCid = QString());
+                          const QString &replyRootCid = QString(),
+                          const QString &quoteUri = QString(),
+                          const QString &quoteCid = QString());
 
 signals:
     void sessionChanged();
@@ -53,6 +55,9 @@ private:
         QString parentCid;
         QString rootUri;
         QString rootCid;
+        // Quoted post (app.bsky.embed.record), if any
+        QString quoteUri;
+        QString quoteCid;
     };
 
     // Uploads attached images one by one (recompressed under the ~1MB

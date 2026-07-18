@@ -61,6 +61,10 @@
         <source>Add images</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Quote @%1</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Composer</name>
@@ -295,6 +299,10 @@
     </message>
     <message>
         <source>Link copied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quote</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

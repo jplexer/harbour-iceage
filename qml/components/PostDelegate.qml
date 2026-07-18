@@ -71,6 +71,15 @@ ListItem {
             onClicked: feedModel.toggleRepost(index)
         }
         MenuItem {
+            text: qsTr("Quote")
+            onClicked: pageStack.push(Qt.resolvedUrl("../pages/ComposePage.qml"), {
+                session: feedModel.session,
+                quoteUri: uri,
+                quoteCid: cid,
+                quoteAuthorHandle: authorHandle
+            })
+        }
+        MenuItem {
             text: (likeUri.length > 0 ? qsTr("Unlike (%1)") : qsTr("Like (%1)"))
                   .arg(likeCount)
             onClicked: feedModel.toggleLike(index)
