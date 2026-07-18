@@ -32,6 +32,21 @@
     </message>
 </context>
 <context>
+    <name>AltTextDialog</name>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alt text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Describe the image</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ComposePage</name>
     <message>
         <source>Reply to @%1</source>

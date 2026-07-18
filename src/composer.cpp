@@ -151,6 +151,7 @@ void Composer::addImage(const QString &pathOrUrl)
     if (path.isEmpty() || m_images.contains(path))
         return;
     m_images.append(path);
+    m_alts.append(QString());
     emit imagesChanged();
 }
 
@@ -159,6 +160,15 @@ void Composer::removeImage(int index)
     if (index < 0 || index >= m_images.count())
         return;
     m_images.removeAt(index);
+    m_alts.removeAt(index);
+    emit imagesChanged();
+}
+
+void Composer::setImageAlt(int index, const QString &alt)
+{
+    if (index < 0 || index >= m_alts.count() || m_alts.at(index) == alt)
+        return;
+    m_alts[index] = alt;
     emit imagesChanged();
 }
 
@@ -273,7 +283,7 @@ void Composer::uploadImages(const QString &text, const ReplyRefs &reply,
         aspect.insert(QStringLiteral("width"), width);
         aspect.insert(QStringLiteral("height"), height);
         QJsonObject item;
-        item.insert(QStringLiteral("alt"), QString());
+        item.insert(QStringLiteral("alt"), guard->m_alts.value(index));
         item.insert(QStringLiteral("image"), data.value(QStringLiteral("blob")).toObject());
         item.insert(QStringLiteral("aspectRatio"), aspect);
         items->append(item);
@@ -353,6 +363,7 @@ void Composer::sendRecord(const QString &text, const ReplyRefs &reply,
         if (error.isEmpty()) {
             if (!guard->m_images.isEmpty()) {
                 guard->m_images.clear();
+                guard->m_alts.clear();
                 emit guard->imagesChanged();
             }
             emit guard->posted();

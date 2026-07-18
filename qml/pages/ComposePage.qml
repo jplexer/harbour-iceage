@@ -164,7 +164,8 @@ Page {
                                                              : Theme.secondaryColor
             }
 
-            // Attached images; tap a thumbnail to remove it
+            // Attached images; tap a thumbnail to edit its alt text,
+            // tap the cross to remove it
             Flow {
                 x: Theme.horizontalPageMargin
                 width: parent.width - 2 * Theme.horizontalPageMargin
@@ -185,6 +186,47 @@ Page {
 
                         MouseArea {
                             anchors.fill: parent
+                            onClicked: {
+                                var imageIndex = index
+                                var dialog = pageStack.push(
+                                        Qt.resolvedUrl("AltTextDialog.qml"), {
+                                    imagePath: modelData,
+                                    alt: composer.imageAlts[index]
+                                })
+                                dialog.accepted.connect(function() {
+                                    composer.setImageAlt(imageIndex, dialog.alt)
+                                })
+                            }
+                        }
+
+                        // "ALT" badge once alt text is set
+                        Rectangle {
+                            anchors {
+                                left: parent.left
+                                bottom: parent.bottom
+                            }
+                            width: altBadge.width + 2 * Theme.paddingSmall
+                            height: altBadge.height + Theme.paddingSmall
+                            color: Theme.rgba("black", 0.6)
+                            visible: composer.imageAlts[index].length > 0
+
+                            Label {
+                                id: altBadge
+                                anchors.centerIn: parent
+                                text: "ALT"
+                                font.pixelSize: Theme.fontSizeTiny
+                                color: Theme.primaryColor
+                            }
+                        }
+
+                        IconButton {
+                            anchors {
+                                top: parent.top
+                                right: parent.right
+                            }
+                            width: Theme.iconSizeMedium
+                            height: Theme.iconSizeMedium
+                            icon.source: "image://theme/icon-m-clear"
                             onClicked: composer.removeImage(index)
                         }
                     }

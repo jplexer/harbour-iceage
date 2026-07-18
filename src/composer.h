@@ -18,8 +18,10 @@ class Composer : public QObject
     Q_OBJECT
     Q_PROPERTY(Session *session READ session WRITE setSession NOTIFY sessionChanged)
     Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
-    // Local file paths of attached images (max 4, like Bluesky)
+    // Local file paths of attached images (max 4, like Bluesky) and
+    // their alt texts (parallel list)
     Q_PROPERTY(QStringList images READ images NOTIFY imagesChanged)
+    Q_PROPERTY(QStringList imageAlts READ imageAlts NOTIFY imagesChanged)
 public:
     explicit Composer(QObject *parent = nullptr);
 
@@ -27,9 +29,11 @@ public:
     void setSession(Session *session);
     bool busy() const { return m_busy; }
     QStringList images() const { return m_images; }
+    QStringList imageAlts() const { return m_alts; }
 
     Q_INVOKABLE void addImage(const QString &pathOrUrl);
     Q_INVOKABLE void removeImage(int index);
+    Q_INVOKABLE void setImageAlt(int index, const QString &alt);
     // Hashtag autocomplete from tags seen in parsed posts
     Q_INVOKABLE QStringList suggestTags(const QString &prefix) const;
 
@@ -73,6 +77,7 @@ private:
     Session *m_session = nullptr;
     bool m_busy = false;
     QStringList m_images;
+    QStringList m_alts;
 };
 
 #endif // COMPOSER_H

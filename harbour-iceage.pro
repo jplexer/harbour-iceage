@@ -76,6 +76,7 @@ DISTFILES += qml/harbour-iceage.qml \
     qml/pages/SearchPage.qml \
     qml/pages/ActorListPage.qml \
     qml/pages/FeedsPage.qml \
+    qml/pages/AltTextDialog.qml \
     qml/components/ProfileFeedPane.qml \
     qml/components/ActorDelegate.qml \
     qml/components/linkutils.js \
