@@ -49,6 +49,11 @@ Page {
                 })
             }
             MenuItem {
+                text: qsTr("Search")
+                visible: session.loggedIn
+                onClicked: pageStack.push(Qt.resolvedUrl("SearchPage.qml"), { session: session })
+            }
+            MenuItem {
                 text: notifications.unreadCount > 0
                       ? qsTr("Notifications (%1)").arg(notifications.unreadCount)
                       : qsTr("Notifications")

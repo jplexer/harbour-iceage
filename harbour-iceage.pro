@@ -30,7 +30,9 @@ SOURCES += src/harbour-iceage.cpp \
     src/threadmodel.cpp \
     src/authorfeedmodel.cpp \
     src/notificationsmodel.cpp \
-    src/composer.cpp
+    src/composer.cpp \
+    src/searchpostsmodel.cpp \
+    src/actorsearchmodel.cpp
 
 HEADERS += src/xrpcclient.h \
     src/session.h \
@@ -43,7 +45,9 @@ HEADERS += src/xrpcclient.h \
     src/threadmodel.h \
     src/authorfeedmodel.h \
     src/notificationsmodel.h \
-    src/composer.h
+    src/composer.h \
+    src/searchpostsmodel.h \
+    src/actorsearchmodel.h
 
 DISTFILES += qml/harbour-iceage.qml \
     qml/cover/CoverPage.qml \
@@ -57,6 +61,8 @@ DISTFILES += qml/harbour-iceage.qml \
     qml/pages/SettingsPage.qml \
     qml/pages/NotificationsPage.qml \
     qml/pages/VideoPage.qml \
+    qml/pages/SearchPage.qml \
+    qml/components/ProfileFeedPane.qml \
     rpm/harbour-iceage.changes.in \
     rpm/harbour-iceage.changes.run.in \
     rpm/harbour-iceage.spec \

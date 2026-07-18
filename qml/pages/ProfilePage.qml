@@ -51,97 +51,109 @@ Page {
             id: headerColumn
             width: parent.width
 
-            Image {
+            // Everything above the tab row fades out as the header pins,
+            // so no text lingers in the display cutout strip
+            Column {
+                id: bodyColumn
                 width: parent.width
-                height: width / 3
-                source: feedPosts.profile.banner !== undefined ? feedPosts.profile.banner : ""
-                visible: source != ""
-                asynchronous: true
-                fillMode: Image.PreserveAspectCrop
-            }
+                opacity: page._collapseMax > 0
+                         ? Math.max(0, Math.min(1,
+                               (page._collapseMax - page._headerOffset)
+                               / Math.max(page._cutout, Theme.itemSizeSmall)))
+                         : 1
 
-            Item {
-                width: parent.width
-                height: Theme.paddingLarge
-            }
-
-            Image {
-                x: Theme.horizontalPageMargin
-                width: Theme.itemSizeLarge
-                height: Theme.itemSizeLarge
-                source: feedPosts.profile.avatar !== undefined ? feedPosts.profile.avatar : ""
-                asynchronous: true
-                fillMode: Image.PreserveAspectCrop
-            }
-
-            Label {
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * Theme.horizontalPageMargin
-                truncationMode: TruncationMode.Fade
-                text: feedPosts.profile.displayName !== undefined
-                      ? feedPosts.profile.displayName : ""
-                font.pixelSize: Theme.fontSizeLarge
-                color: Theme.highlightColor
-            }
-
-            Label {
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * Theme.horizontalPageMargin
-                truncationMode: TruncationMode.Fade
-                text: {
-                    var handle = feedPosts.profile.handle !== undefined
-                                 ? "@" + feedPosts.profile.handle : ""
-                    if (feedPosts.profile.followsYou === true)
-                        handle += " · " + qsTr("Follows you")
-                    return handle
+                Image {
+                    width: parent.width
+                    height: width / 3
+                    source: feedPosts.profile.banner !== undefined ? feedPosts.profile.banner : ""
+                    visible: source != ""
+                    asynchronous: true
+                    fillMode: Image.PreserveAspectCrop
                 }
-                font.pixelSize: Theme.fontSizeSmall
-                color: Theme.secondaryColor
-            }
 
-            Label {
-                id: bioLabel
-
-                property bool expanded: false
-
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * Theme.horizontalPageMargin
-                wrapMode: Text.Wrap
-                maximumLineCount: expanded ? 1000 : 4
-                elide: Text.ElideRight
-                visible: text.length > 0
-                text: feedPosts.profile.description !== undefined
-                      ? feedPosts.profile.description : ""
-                font.pixelSize: Theme.fontSizeSmall
-                color: Theme.primaryColor
-
-                MouseArea {
-                    anchors.fill: parent
-                    enabled: bioLabel.truncated || bioLabel.expanded
-                    onClicked: bioLabel.expanded = !bioLabel.expanded
+                Item {
+                    width: parent.width
+                    height: Theme.paddingLarge
                 }
-            }
 
-            Label {
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * Theme.horizontalPageMargin
-                visible: feedPosts.profile.handle !== undefined
-                text: qsTr("%1 posts · %2 followers · %3 following")
-                      .arg(feedPosts.profile.postsCount !== undefined
-                           ? feedPosts.profile.postsCount : 0)
-                      .arg(feedPosts.profile.followersCount !== undefined
-                           ? feedPosts.profile.followersCount : 0)
-                      .arg(feedPosts.profile.followsCount !== undefined
-                           ? feedPosts.profile.followsCount : 0)
-                font.pixelSize: Theme.fontSizeExtraSmall
-                color: Theme.secondaryHighlightColor
-            }
+                Image {
+                    x: Theme.horizontalPageMargin
+                    width: Theme.itemSizeLarge
+                    height: Theme.itemSizeLarge
+                    source: feedPosts.profile.avatar !== undefined ? feedPosts.profile.avatar : ""
+                    asynchronous: true
+                    fillMode: Image.PreserveAspectCrop
+                }
 
-            Item {
-                width: parent.width
-                height: Theme.paddingMedium
-            }
+                Label {
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    truncationMode: TruncationMode.Fade
+                    text: feedPosts.profile.displayName !== undefined
+                          ? feedPosts.profile.displayName : ""
+                    font.pixelSize: Theme.fontSizeLarge
+                    color: Theme.highlightColor
+                }
 
+                Label {
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    truncationMode: TruncationMode.Fade
+                    text: {
+                        var handle = feedPosts.profile.handle !== undefined
+                                     ? "@" + feedPosts.profile.handle : ""
+                        if (feedPosts.profile.followsYou === true)
+                            handle += " · " + qsTr("Follows you")
+                        return handle
+                    }
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.secondaryColor
+                }
+
+                Label {
+                    id: bioLabel
+
+                    property bool expanded: false
+
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    wrapMode: Text.Wrap
+                    maximumLineCount: expanded ? 1000 : 4
+                    elide: Text.ElideRight
+                    visible: text.length > 0
+                    text: feedPosts.profile.description !== undefined
+                          ? feedPosts.profile.description : ""
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.primaryColor
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: bioLabel.truncated || bioLabel.expanded
+                        onClicked: bioLabel.expanded = !bioLabel.expanded
+                    }
+                }
+
+                Label {
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    visible: feedPosts.profile.handle !== undefined
+                    text: qsTr("%1 posts · %2 followers · %3 following")
+                          .arg(feedPosts.profile.postsCount !== undefined
+                               ? feedPosts.profile.postsCount : 0)
+                          .arg(feedPosts.profile.followersCount !== undefined
+                               ? feedPosts.profile.followersCount : 0)
+                          .arg(feedPosts.profile.followsCount !== undefined
+                               ? feedPosts.profile.followsCount : 0)
+                    font.pixelSize: Theme.fontSizeExtraSmall
+                    color: Theme.secondaryHighlightColor
+                }
+
+                Item {
+                    width: parent.width
+                    height: Theme.paddingMedium
+                }
+
+            }
             Item {
                 id: tabRow
                 width: parent.width

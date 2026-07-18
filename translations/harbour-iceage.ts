@@ -219,6 +219,37 @@
     </message>
 </context>
 <context>
+    <name>SearchPage</name>
+    <message>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Posts, people, #hashtags</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Posts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>People</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No posts found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Follows you</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No people found</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SettingsPage</name>
     <message>
         <source>Settings</source>
@@ -300,6 +331,10 @@
     </message>
     <message>
         <source>Notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
