@@ -14,9 +14,13 @@ Page {
     // down the same way. The panes reserve its space with a spacer, so
     // the header body never overlaps posts and needs no backdrop; only
     // the sticky tab row gets a panel gradient for posts passing under.
+    // Keep the pinned tab row clear of a display cutout (portrait only,
+    // like Silica's PageHeader)
+    readonly property real _cutout: orientation === Orientation.Portrait
+                                    ? Screen.topCutout.height : 0
+    readonly property real _collapseMax: headerArea.height - tabRow.height - _cutout
     readonly property real _headerOffset: pager.currentItem
-        ? Math.min(pager.currentItem.contentY + headerArea.height,
-                   headerArea.height - tabRow.height)
+        ? Math.min(pager.currentItem.contentY + headerArea.height, _collapseMax)
         : 0
 
     AuthorFeedModel {
@@ -143,18 +147,23 @@ Page {
                 width: parent.width
                 height: Theme.itemSizeSmall
 
-                // Posts scroll under the sticky tab row; standard panel
-                // gradient like DockedPanel uses
+                // Posts scroll under the sticky tab row; panel-style
+                // gradient. As the row pins, the backdrop grows upward to
+                // also cover the display cutout strip above it.
                 Rectangle {
                     anchors.fill: parent
+                    anchors.topMargin: page._collapseMax > 0
+                            ? -page._cutout * Math.max(0, Math.min(1,
+                                  page._headerOffset / page._collapseMax))
+                            : 0
                     gradient: Gradient {
                         GradientStop {
                             position: 0.0
-                            color: Theme.rgba(Theme.highlightBackgroundColor, 0.15)
+                            color: Theme.rgba(Theme.highlightBackgroundColor, 0.5)
                         }
                         GradientStop {
                             position: 1.0
-                            color: Theme.rgba(Theme.highlightBackgroundColor, 0.3)
+                            color: Theme.rgba(Theme.highlightBackgroundColor, 0.7)
                         }
                     }
                 }

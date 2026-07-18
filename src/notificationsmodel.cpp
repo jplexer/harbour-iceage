@@ -26,6 +26,12 @@ void NotificationsModel::setSession(Session *session)
             } else {
                 m_lastAnnounced = -1;
                 setUnreadCount(0);
+                m_cursor.clear();
+                if (!m_items.isEmpty()) {
+                    beginResetModel();
+                    m_items.clear();
+                    endResetModel();
+                }
             }
         });
     }

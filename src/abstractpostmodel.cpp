@@ -15,7 +15,19 @@ void AbstractPostModel::setSession(Session *session)
 {
     if (m_session == session)
         return;
+    if (m_session)
+        disconnect(m_session, nullptr, this, nullptr);
     m_session = session;
+    if (m_session) {
+        // Signing out clears the feed
+        connect(m_session, &Session::loggedInChanged, this, [this]() {
+            if (!m_session->loggedIn() && !m_posts.isEmpty()) {
+                beginResetModel();
+                m_posts.clear();
+                endResetModel();
+            }
+        });
+    }
     emit sessionChanged();
 }
 
