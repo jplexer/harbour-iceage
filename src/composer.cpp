@@ -1,9 +1,12 @@
 #include "composer.h"
 
+#include <QBuffer>
 #include <QDateTime>
+#include <QImage>
 #include <QJsonArray>
 #include <QPointer>
 #include <QRegularExpression>
+#include <QUrl>
 
 #include <memory>
 
@@ -135,6 +138,27 @@ void Composer::setBusy(bool busy)
     emit busyChanged();
 }
 
+void Composer::addImage(const QString &pathOrUrl)
+{
+    if (m_images.count() >= 4)
+        return;
+    QString path = pathOrUrl;
+    if (path.startsWith(QLatin1String("file:")))
+        path = QUrl(path).toLocalFile();
+    if (path.isEmpty() || m_images.contains(path))
+        return;
+    m_images.append(path);
+    emit imagesChanged();
+}
+
+void Composer::removeImage(int index)
+{
+    if (index < 0 || index >= m_images.count())
+        return;
+    m_images.removeAt(index);
+    emit imagesChanged();
+}
+
 void Composer::post(const QString &text, const QString &replyParentUri,
                     const QString &replyParentCid, const QString &replyRootUri,
                     const QString &replyRootCid)
@@ -142,7 +166,7 @@ void Composer::post(const QString &text, const QString &replyParentUri,
     if (!m_session || !m_session->loggedIn() || m_busy)
         return;
     const QString trimmed = text.trimmed();
-    if (trimmed.isEmpty())
+    if (trimmed.isEmpty() && m_images.isEmpty())
         return;
     setBusy(true);
 
@@ -160,7 +184,8 @@ void Composer::post(const QString &text, const QString &replyParentUri,
             handles.append(span.handle);
     }
     if (handles.isEmpty()) {
-        sendRecord(trimmed, reply, QHash<QString, QString>());
+        uploadImages(trimmed, reply, QHash<QString, QString>(),
+                     std::make_shared<QJsonArray>(), 0);
         return;
     }
 
@@ -182,13 +207,72 @@ void Composer::post(const QString &text, const QString &replyParentUri,
                     dids->insert(handle, did);
             }
             if (--(*remaining) == 0)
-                guard->sendRecord(trimmed, reply, *dids);
+                guard->uploadImages(trimmed, reply, *dids,
+                                    std::make_shared<QJsonArray>(), 0);
         });
     }
 }
 
+void Composer::uploadImages(const QString &text, const ReplyRefs &reply,
+                            const QHash<QString, QString> &mentionDids,
+                            std::shared_ptr<QJsonArray> items, int index)
+{
+    if (index >= m_images.count()) {
+        sendRecord(text, reply, mentionDids, *items);
+        return;
+    }
+
+    const QString path = m_images.at(index);
+    QImage image(path);
+    if (image.isNull()) {
+        setBusy(false);
+        emit postError(tr("Could not read image %1").arg(path));
+        return;
+    }
+    if (image.width() > 2000 || image.height() > 2000)
+        image = image.scaled(2000, 2000, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    // Recompress until under the blob size limit (~1MB)
+    QByteArray jpeg;
+    int quality = 85;
+    forever {
+        jpeg.clear();
+        QBuffer buffer(&jpeg);
+        buffer.open(QIODevice::WriteOnly);
+        image.save(&buffer, "JPEG", quality);
+        if (jpeg.size() <= 900 * 1024 || quality <= 40)
+            break;
+        quality -= 15;
+    }
+
+    const int width = image.width();
+    const int height = image.height();
+    QPointer<Composer> guard(this);
+    m_session->uploadBlob(jpeg, QStringLiteral("image/jpeg"),
+                          [guard, text, reply, mentionDids, items, index, width, height](
+                                  const QJsonObject &data, const QString &error) {
+        if (!guard)
+            return;
+        if (!error.isEmpty()) {
+            guard->setBusy(false);
+            emit guard->postError(error);
+            return;
+        }
+        QJsonObject aspect;
+        aspect.insert(QStringLiteral("width"), width);
+        aspect.insert(QStringLiteral("height"), height);
+        QJsonObject item;
+        item.insert(QStringLiteral("alt"), QString());
+        item.insert(QStringLiteral("image"), data.value(QStringLiteral("blob")).toObject());
+        item.insert(QStringLiteral("aspectRatio"), aspect);
+        items->append(item);
+        guard->uploadImages(text, reply, mentionDids, items, index + 1);
+    });
+}
+
 void Composer::sendRecord(const QString &text, const ReplyRefs &reply,
-                          const QHash<QString, QString> &mentionDids)
+                          const QHash<QString, QString> &mentionDids,
+                          const QJsonArray &imageItems)
 {
     QJsonObject record;
     record.insert(QStringLiteral("$type"), QStringLiteral("app.bsky.feed.post"));
@@ -198,6 +282,13 @@ void Composer::sendRecord(const QString &text, const ReplyRefs &reply,
     const QJsonArray facets = detectFacets(text, mentionDids);
     if (!facets.isEmpty())
         record.insert(QStringLiteral("facets"), facets);
+
+    if (!imageItems.isEmpty()) {
+        QJsonObject embed;
+        embed.insert(QStringLiteral("$type"), QStringLiteral("app.bsky.embed.images"));
+        embed.insert(QStringLiteral("images"), imageItems);
+        record.insert(QStringLiteral("embed"), embed);
+    }
 
     if (!reply.parentUri.isEmpty()) {
         QJsonObject parent;
@@ -225,9 +316,14 @@ void Composer::sendRecord(const QString &text, const ReplyRefs &reply,
         if (!guard)
             return;
         guard->setBusy(false);
-        if (error.isEmpty())
+        if (error.isEmpty()) {
+            if (!guard->m_images.isEmpty()) {
+                guard->m_images.clear();
+                emit guard->imagesChanged();
+            }
             emit guard->posted();
-        else
+        } else {
             emit guard->postError(error);
+        }
     });
 }

@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Sailfish.Pickers 1.0
 import harbour.iceage 1.0
 
 Page {
@@ -51,6 +52,42 @@ Page {
                                                              : Theme.secondaryColor
             }
 
+            // Attached images; tap a thumbnail to remove it
+            Flow {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                spacing: Theme.paddingSmall
+                visible: composer.images.length > 0
+
+                Repeater {
+                    model: composer.images
+
+                    Image {
+                        width: Theme.itemSizeLarge
+                        height: Theme.itemSizeLarge
+                        source: modelData
+                        sourceSize.width: Theme.itemSizeLarge
+                        sourceSize.height: Theme.itemSizeLarge
+                        asynchronous: true
+                        fillMode: Image.PreserveAspectCrop
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: composer.removeImage(index)
+                        }
+                    }
+                }
+            }
+
+            ButtonLayout {
+                Button {
+                    text: qsTr("Add images")
+                    visible: composer.images.length < 4
+                    enabled: !composer.busy
+                    onClicked: pageStack.push(imagePicker)
+                }
+            }
+
             Label {
                 id: errorLabel
                 x: Theme.horizontalPageMargin
@@ -64,7 +101,8 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: page.isReply ? qsTr("Reply") : qsTr("Post")
                 enabled: !composer.busy
-                         && textArea.text.trim().length > 0
+                         && (textArea.text.trim().length > 0
+                             || composer.images.length > 0)
                          && textArea.text.length <= page.maxLength
                 onClicked: {
                     errorLabel.text = ""
@@ -81,5 +119,16 @@ Page {
         }
 
         VerticalScrollDecorator { }
+    }
+
+    Component {
+        id: imagePicker
+
+        MultiImagePickerDialog {
+            onAccepted: {
+                for (var i = 0; i < selectedContent.count; ++i)
+                    composer.addImage(selectedContent.get(i).filePath)
+            }
+        }
     }
 }

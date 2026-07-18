@@ -39,6 +39,9 @@ public:
     // authorized with the refresh token instead of the access token.
     QNetworkReply *post(const QString &nsid, const QJsonObject &body = QJsonObject(),
                         const QString &jwtOverride = QString());
+    // Raw-body POST (com.atproto.repo.uploadBlob)
+    QNetworkReply *postBlob(const QString &nsid, const QByteArray &data,
+                            const QString &contentType);
 
     // Consumes (deleteLater()s) the reply. On failure errorOut receives the
     // XRPC error code (e.g. "ExpiredToken", "AuthenticationRequired") or the

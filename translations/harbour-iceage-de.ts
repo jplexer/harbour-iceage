@@ -57,6 +57,17 @@
         <source>Post</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Add images</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Composer</name>
+    <message>
+        <source>Could not read image %1</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CoverPage</name>

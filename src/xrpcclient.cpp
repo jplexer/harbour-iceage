@@ -94,6 +94,15 @@ QNetworkReply *XrpcClient::post(const QString &nsid, const QJsonObject &body,
     return m_nam.post(request, payload);
 }
 
+QNetworkReply *XrpcClient::postBlob(const QString &nsid, const QByteArray &data,
+                                    const QString &contentType)
+{
+    const QUrl url(m_service + QStringLiteral("/xrpc/") + nsid);
+    QNetworkRequest request = makeRequest(url, QStringLiteral("POST"), m_accessJwt);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, contentType);
+    return m_nam.post(request, data);
+}
+
 QJsonObject XrpcClient::parseReply(QNetworkReply *reply, QString *errorOut)
 {
     reply->deleteLater();

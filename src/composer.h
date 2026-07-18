@@ -1,7 +1,11 @@
 #ifndef COMPOSER_H
 #define COMPOSER_H
 
+#include <QJsonArray>
 #include <QObject>
+#include <QStringList>
+
+#include <memory>
 
 #include "session.h"
 
@@ -14,12 +18,18 @@ class Composer : public QObject
     Q_OBJECT
     Q_PROPERTY(Session *session READ session WRITE setSession NOTIFY sessionChanged)
     Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
+    // Local file paths of attached images (max 4, like Bluesky)
+    Q_PROPERTY(QStringList images READ images NOTIFY imagesChanged)
 public:
     explicit Composer(QObject *parent = nullptr);
 
     Session *session() const { return m_session; }
     void setSession(Session *session);
     bool busy() const { return m_busy; }
+    QStringList images() const { return m_images; }
+
+    Q_INVOKABLE void addImage(const QString &pathOrUrl);
+    Q_INVOKABLE void removeImage(int index);
 
     // Reply parameters are empty for a top-level post.
     Q_INVOKABLE void post(const QString &text,
@@ -31,6 +41,7 @@ public:
 signals:
     void sessionChanged();
     void busyChanged();
+    void imagesChanged();
     void posted();
     void postError(const QString &message);
 
@@ -42,12 +53,19 @@ private:
         QString rootCid;
     };
 
+    // Uploads attached images one by one (recompressed under the ~1MB
+    // blob limit), then sends the record with an images embed.
+    void uploadImages(const QString &text, const ReplyRefs &reply,
+                      const QHash<QString, QString> &mentionDids,
+                      std::shared_ptr<QJsonArray> items, int index);
     void sendRecord(const QString &text, const ReplyRefs &reply,
-                    const QHash<QString, QString> &mentionDids);
+                    const QHash<QString, QString> &mentionDids,
+                    const QJsonArray &imageItems);
     void setBusy(bool busy);
 
     Session *m_session = nullptr;
     bool m_busy = false;
+    QStringList m_images;
 };
 
 #endif // COMPOSER_H

@@ -386,6 +386,45 @@ void Session::postAuthorized(const QString &nsid, const QJsonObject &body, const
     doAuthorized(true, nsid, QVariantMap(), body, cb, false, false);
 }
 
+void Session::uploadBlob(const QByteArray &data, const QString &contentType,
+                         const XrpcCallback &cb)
+{
+    doUploadBlob(data, contentType, cb, false, false);
+}
+
+void Session::doUploadBlob(const QByteArray &data, const QString &contentType,
+                           const XrpcCallback &cb, bool triedNonce, bool triedRefresh)
+{
+    QNetworkReply *reply = m_client.postBlob(QStringLiteral("com.atproto.repo.uploadBlob"),
+                                             data, contentType);
+    connect(reply, &QNetworkReply::finished, this,
+            [this, reply, data, contentType, cb, triedNonce, triedRefresh]() {
+        const QByteArray nonce = reply->rawHeader("DPoP-Nonce");
+        if (!nonce.isEmpty())
+            m_client.setDpopNonce(QString::fromLatin1(nonce));
+
+        QString error;
+        const QJsonObject result = XrpcClient::parseReply(reply, &error);
+
+        if (error == QLatin1String("use_dpop_nonce") && !triedNonce) {
+            doUploadBlob(data, contentType, cb, true, triedRefresh);
+            return;
+        }
+        if (needsRefresh(error) && !triedRefresh) {
+            refreshThen([this, data, contentType, cb, triedNonce, error](bool ok) {
+                if (!ok) {
+                    logout();
+                    cb(QJsonObject(), error);
+                    return;
+                }
+                doUploadBlob(data, contentType, cb, triedNonce, true);
+            });
+            return;
+        }
+        cb(result, error);
+    });
+}
+
 void Session::doAuthorized(bool isPost, const QString &nsid, const QVariantMap &params,
                            const QJsonObject &body, const XrpcCallback &cb,
                            bool triedNonce, bool triedRefresh)

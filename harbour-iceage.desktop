@@ -18,4 +18,5 @@ OrganizationName=me.funnyna
 ApplicationName=harbour-iceage
 # Internet: talking to the Bluesky PDS and loading avatars/images
 # Secrets: sailfishsecretsd access for token/DPoP-key storage
-Permissions=Internet;Secrets;Notifications;Audio
+# Pictures + MediaIndexing: gallery picker for attaching images to posts
+Permissions=Internet;Secrets;Notifications;Audio;Pictures;MediaIndexing

@@ -52,6 +52,10 @@ public:
     // expired access tokens (retrying once each).
     void getAuthorized(const QString &nsid, const QVariantMap &params, const XrpcCallback &cb);
     void postAuthorized(const QString &nsid, const QJsonObject &body, const XrpcCallback &cb);
+    // com.atproto.repo.uploadBlob with the same nonce/refresh handling;
+    // the callback data contains the "blob" object for record embeds.
+    void uploadBlob(const QByteArray &data, const QString &contentType,
+                    const XrpcCallback &cb);
 
     XrpcClient *client() { return &m_client; }
 
@@ -69,6 +73,8 @@ private:
     void doAuthorized(bool isPost, const QString &nsid, const QVariantMap &params,
                       const QJsonObject &body, const XrpcCallback &cb,
                       bool triedNonce, bool triedRefresh);
+    void doUploadBlob(const QByteArray &data, const QString &contentType,
+                      const XrpcCallback &cb, bool triedNonce, bool triedRefresh);
     void adoptSession(const QJsonObject &data);
     void adoptOAuthTokens(const QString &accessToken, const QString &refreshToken,
                           const QString &did, const QString &issuer,
