@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Sailfish.Share 1.0
 import "linkutils.js" as LinkUtils
 
 // Shared delegate for post list models (timeline, thread, author feed).
@@ -75,12 +76,30 @@ ListItem {
             onClicked: feedModel.toggleLike(index)
         }
         MenuItem {
+            text: qsTr("Share")
+            onClicked: {
+                shareAction.resources = [{
+                    "type": "text/x-url",
+                    "status": "https://bsky.app/profile/" + authorHandle
+                              + "/post/" + uri.split("/").pop(),
+                    "linkTitle": qsTr("%1 on Bluesky").arg(authorName)
+                }]
+                shareAction.trigger()
+            }
+        }
+        MenuItem {
             visible: authorDid === feedModel.session.did
             text: qsTr("Delete")
             onClicked: postItem.remorseDelete(function() {
                 feedModel.deletePost(index)
             })
         }
+    }
+
+    ShareAction {
+        id: shareAction
+        title: qsTr("Share post")
+        mimeType: "text/x-url"
     }
 
     Rectangle {
