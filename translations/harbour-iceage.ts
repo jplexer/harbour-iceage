@@ -320,6 +320,10 @@
         <source>Quote</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Sensitive content (%1) · tap to show</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProfileFeedPane</name>

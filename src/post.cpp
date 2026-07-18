@@ -197,6 +197,7 @@ QHash<int, QByteArray> roleNames()
     roles.insert(AuthorAvatar, "authorAvatar");
     roles.insert(Body, "body");
     roles.insert(BodyHtml, "bodyHtml");
+    roles.insert(Labels, "labels");
     roles.insert(Images, "images");
     roles.insert(Video, "video");
     roles.insert(Quote, "quote");
@@ -227,6 +228,7 @@ QVariant data(const Post &post, int role)
     case AuthorAvatar: return post.authorAvatar;
     case Body: return post.body;
     case BodyHtml: return post.bodyHtml;
+    case Labels: return post.labels;
     case Images: return post.images;
     case Video: return post.video;
     case Quote: return post.quote;
@@ -264,6 +266,9 @@ Post parsePostView(const QJsonObject &postView)
     p.authorAvatar = author.value(QStringLiteral("avatar")).toString();
     p.body = record.value(QStringLiteral("text")).toString();
     p.bodyHtml = renderRichText(p.body, record.value(QStringLiteral("facets")).toArray());
+    const QJsonArray labels = postView.value(QStringLiteral("labels")).toArray();
+    for (const QJsonValue &value : labels)
+        p.labels.append(value.toObject().value(QStringLiteral("val")).toString());
     p.images = parseImages(postView);
     p.video = parseVideo(postView);
     p.quote = parseQuote(postView);

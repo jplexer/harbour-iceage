@@ -21,6 +21,7 @@ struct Post {
     QString bodyHtml;
     QString repostedBy;
     QString replyToHandle; // parent author when this feed item is a reply
+    QStringList labels;   // moderation label values (e.g. porn, graphic-media)
     QVariantList images;
     QVariantMap video;    // playlist (HLS), thumbnail, alt, aspectWidth/Height
     QVariantMap quote;    // embedded quote post: uri, authorName, authorHandle, text
@@ -50,6 +51,7 @@ enum Role {
     AuthorAvatar,
     Body,
     BodyHtml,
+    Labels,
     Images,
     Video,
     Quote,

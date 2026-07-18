@@ -14,6 +14,19 @@ ListItem {
 
     readonly property real indent: depth * Theme.paddingLarge
 
+    // Media behind sensitive-content labels collapses until tapped
+    readonly property var _sensitiveLabels: ["porn", "sexy", "nudity", "graphic-media", "gore"]
+    readonly property bool _sensitive: {
+        for (var i = 0; i < labels.length; ++i) {
+            if (_sensitiveLabels.indexOf(labels[i]) >= 0)
+                return true
+        }
+        return false
+    }
+    readonly property bool _hasMedia: images.length > 0 || video.playlist !== undefined
+    property bool mediaRevealed: false
+    readonly property bool _mediaVisible: !_sensitive || mediaRevealed
+
     width: ListView.view.width
     contentHeight: Math.max(contentColumn.y + contentColumn.height,
                             avatar.y + avatar.height) + Theme.paddingMedium
@@ -227,8 +240,35 @@ ListItem {
             onLinkActivated: postItem.activateLink(link)
         }
 
+        // Sensitive-content cover in place of the media
+        BackgroundItem {
+            visible: postItem._sensitive && !postItem.mediaRevealed
+                     && postItem._hasMedia
+            width: parent.width
+            height: visible ? Theme.itemSizeMedium : 0
+            onClicked: postItem.mediaRevealed = true
+
+            Rectangle {
+                anchors.fill: parent
+                radius: Theme.paddingSmall / 2
+                color: Theme.rgba(Theme.secondaryHighlightColor, 0.1)
+                border.color: Theme.rgba(Theme.secondaryColor, 0.3)
+                border.width: 1
+            }
+
+            Label {
+                anchors.centerIn: parent
+                width: parent.width - 2 * Theme.paddingLarge
+                horizontalAlignment: Text.AlignHCenter
+                truncationMode: TruncationMode.Fade
+                text: qsTr("Sensitive content (%1) · tap to show").arg(labels.join(", "))
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: Theme.secondaryHighlightColor
+            }
+        }
+
         Repeater {
-            model: images
+            model: postItem._mediaVisible ? images : []
             delegate: Image {
                 width: contentColumn.width
                 height: modelData.aspectWidth > 0
@@ -252,7 +292,7 @@ ListItem {
 
         // Video embed: thumbnail with play overlay; playback on its own page
         Item {
-            visible: video.playlist !== undefined
+            visible: video.playlist !== undefined && postItem._mediaVisible
             width: parent.width
             height: !visible ? 0
                     : (video.aspectWidth > 0
