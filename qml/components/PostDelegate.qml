@@ -115,6 +115,7 @@ ListItem {
 
         MouseArea {
             anchors.fill: parent
+            onPressAndHold: postItem.showMenu()
             onClicked: postItem.openProfile()
         }
     }
@@ -138,6 +139,7 @@ ListItem {
 
             MouseArea {
                 anchors.fill: parent
+                onPressAndHold: postItem.showMenu()
                 onClicked: postItem.openProfile()
             }
         }
@@ -152,6 +154,7 @@ ListItem {
 
             MouseArea {
                 anchors.fill: parent
+                onPressAndHold: postItem.showMenu()
                 onClicked: postItem.openProfile()
             }
         }
@@ -182,6 +185,7 @@ ListItem {
 
                 MouseArea {
                     anchors.fill: parent
+                    onPressAndHold: postItem.showMenu()
                     onClicked: pageStack.push(Qt.resolvedUrl("../pages/ImagePage.qml"), {
                         source: modelData.fullsize,
                         altText: modelData.alt
@@ -218,6 +222,7 @@ ListItem {
 
             MouseArea {
                 anchors.fill: parent
+                onPressAndHold: postItem.showMenu()
                 onClicked: pageStack.push(Qt.resolvedUrl("../pages/VideoPage.qml"), {
                     source: video.playlist,
                     altText: video.alt !== undefined ? video.alt : ""
@@ -264,6 +269,7 @@ ListItem {
 
             MouseArea {
                 anchors.fill: parent
+                onPressAndHold: postItem.showMenu()
                 onClicked: pageStack.push(Qt.resolvedUrl("../pages/ThreadPage.qml"), {
                     postUri: quote.uri,
                     session: feedModel.session
@@ -325,6 +331,7 @@ ListItem {
 
             MouseArea {
                 anchors.fill: parent
+                onPressAndHold: postItem.showMenu()
                 onClicked: if (external.uri !== undefined) Qt.openUrlExternally(external.uri)
             }
         }
