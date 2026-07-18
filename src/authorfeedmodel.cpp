@@ -17,6 +17,15 @@ void AuthorFeedModel::setActor(const QString &actor)
     emit actorChanged();
 }
 
+void AuthorFeedModel::setFilter(const QString &filter)
+{
+    if (m_filter == filter)
+        return;
+    m_filter = filter;
+    emit filterChanged();
+    fetchFeed(true);
+}
+
 void AuthorFeedModel::refresh()
 {
     fetchProfile();
@@ -149,15 +158,23 @@ void AuthorFeedModel::fetchFeed(bool reset)
     QVariantMap params;
     params.insert(QStringLiteral("actor"), m_actor);
     params.insert(QStringLiteral("limit"), 50);
+    params.insert(QStringLiteral("filter"), m_filter);
     if (!reset)
         params.insert(QStringLiteral("cursor"), m_cursor);
 
     QPointer<AuthorFeedModel> guard(this);
+    const QString filter = m_filter;
     session()->getAuthorized(QStringLiteral("app.bsky.feed.getAuthorFeed"), params,
-                             [guard, reset](const QJsonObject &data, const QString &error) {
+                             [guard, reset, filter](const QJsonObject &data, const QString &error) {
         if (!guard)
             return;
         guard->setLoading(false);
+        if (guard->m_filter != filter) {
+            // Tab switched while this fetch was in flight; the switch's own
+            // fetch was blocked by the loading guard, so run it now.
+            guard->fetchFeed(true);
+            return;
+        }
         if (!error.isEmpty()) {
             emit guard->errorOccurred(error);
             return;

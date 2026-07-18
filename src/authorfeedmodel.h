@@ -10,12 +10,16 @@ class AuthorFeedModel : public AbstractPostModel
     Q_OBJECT
     Q_PROPERTY(QString actor READ actor WRITE setActor NOTIFY actorChanged)
     Q_PROPERTY(QVariantMap profile READ profile NOTIFY profileChanged)
+    // getAuthorFeed filter: posts_no_replies (default) or posts_with_replies
+    Q_PROPERTY(QString filter READ filter WRITE setFilter NOTIFY filterChanged)
 public:
     explicit AuthorFeedModel(QObject *parent = nullptr);
 
     QString actor() const { return m_actor; }
     void setActor(const QString &actor);
     QVariantMap profile() const { return m_profile; }
+    QString filter() const { return m_filter; }
+    void setFilter(const QString &filter);
 
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void loadMore();
@@ -26,6 +30,7 @@ public:
 signals:
     void actorChanged();
     void profileChanged();
+    void filterChanged();
 
 private:
     void fetchProfile();
@@ -33,6 +38,7 @@ private:
 
     QString m_actor;
     QString m_cursor;
+    QString m_filter = QStringLiteral("posts_no_replies");
     QVariantMap m_profile;
 };
 

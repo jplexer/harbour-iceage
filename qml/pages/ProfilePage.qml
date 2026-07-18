@@ -115,7 +115,49 @@ Page {
 
             Item {
                 width: parent.width
-                height: Theme.paddingLarge
+                height: Theme.paddingMedium
+            }
+
+            // Posts / Posts & replies tabs
+            Row {
+                width: parent.width
+
+                Repeater {
+                    model: [
+                        { label: qsTr("Posts"), filter: "posts_no_replies" },
+                        { label: qsTr("Posts & replies"), filter: "posts_with_replies" }
+                    ]
+
+                    BackgroundItem {
+                        width: parent.width / 2
+                        height: Theme.itemSizeSmall
+                        onClicked: feed.filter = modelData.filter
+
+                        Label {
+                            anchors.centerIn: parent
+                            text: modelData.label
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: feed.filter === modelData.filter
+                                   ? Theme.highlightColor : Theme.secondaryColor
+                        }
+
+                        Rectangle {
+                            anchors {
+                                left: parent.left
+                                right: parent.right
+                                bottom: parent.bottom
+                            }
+                            height: Math.round(Theme.pixelRatio * 2)
+                            color: Theme.highlightColor
+                            visible: feed.filter === modelData.filter
+                        }
+                    }
+                }
+            }
+
+            Item {
+                width: parent.width
+                height: Theme.paddingMedium
             }
         }
 
