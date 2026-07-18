@@ -9,6 +9,16 @@ SilicaListView {
 
     property var feed
     property real headerHeight
+    property real _prevHeaderHeight: 0
+
+    // The header grows as banner/bio load; if the view was resting at
+    // the top, stay glued to the top so the first pull-down still opens
+    // the menu instead of eating the growth first.
+    onHeaderHeightChanged: {
+        if (!dragging && !flicking && contentY <= -_prevHeaderHeight + 1)
+            contentY = -headerHeight
+        _prevHeaderHeight = headerHeight
+    }
 
     model: feed
 

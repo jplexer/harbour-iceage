@@ -141,16 +141,10 @@ Page {
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.primaryColor
                     linkColor: Theme.highlightColor
-
-                    MouseArea {
-                        anchors.fill: parent
-                        enabled: bioLabel.text.indexOf("<a ") >= 0
-                        onClicked: {
-                            var link = bioLabel.linkAt(mouse.x, mouse.y)
-                            if (link.length > 0)
-                                page.openLink(link)
-                        }
-                    }
+                    // No MouseArea here: it would swallow drags (the header
+                    // has no flickable ancestor to steal them), leaving a
+                    // dead spot for scroll/pull-down over the bio
+                    onLinkActivated: page.openLink(link)
                 }
 
                 Item {
