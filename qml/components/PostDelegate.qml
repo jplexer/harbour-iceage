@@ -23,6 +23,28 @@ ListItem {
         })
     }
 
+    // Mention and hashtag facets render as bsky.app links; open those
+    // in-app (also catches pasted bsky.app profile/hashtag URLs)
+    function activateLink(link) {
+        var m = link.match(/^https:\/\/bsky\.app\/profile\/([^\/?#]+)\/?$/)
+        if (m) {
+            pageStack.push(Qt.resolvedUrl("../pages/ProfilePage.qml"), {
+                session: feedModel.session,
+                actor: decodeURIComponent(m[1])
+            })
+            return
+        }
+        m = link.match(/^https:\/\/bsky\.app\/hashtag\/([^\/?#]+)/)
+        if (m) {
+            pageStack.push(Qt.resolvedUrl("../pages/SearchPage.qml"), {
+                session: feedModel.session,
+                initialQuery: "#" + decodeURIComponent(m[1])
+            })
+            return
+        }
+        Qt.openUrlExternally(link)
+    }
+
     onClicked: {
         if (openThreadOnClick && !isMain) {
             pageStack.push(Qt.resolvedUrl("../pages/ThreadPage.qml"), {
@@ -168,7 +190,7 @@ ListItem {
             font.pixelSize: Theme.fontSizeSmall
             color: postItem.highlighted ? Theme.highlightColor : Theme.primaryColor
             linkColor: Theme.highlightColor
-            onLinkActivated: Qt.openUrlExternally(link)
+            onLinkActivated: postItem.activateLink(link)
         }
 
         Repeater {

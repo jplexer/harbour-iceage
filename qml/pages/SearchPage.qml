@@ -7,6 +7,15 @@ Page {
     id: page
 
     property Session session
+    // Pre-filled query (e.g. from a tapped hashtag); searches immediately
+    property string initialQuery
+
+    Component.onCompleted: {
+        if (initialQuery.length > 0) {
+            searchField.text = initialQuery
+            runSearch()
+        }
+    }
 
     SearchPostsModel {
         id: searchPosts
