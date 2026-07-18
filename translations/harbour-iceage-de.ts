@@ -114,6 +114,18 @@
         <source>%1 quoted your post</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>%1 liked your repost</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 reposted your repost</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 joined via your starter pack</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>FeedsPage</name>
@@ -259,6 +271,22 @@
     </message>
     <message>
         <source>No notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 liked your repost</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 reposted your repost</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 joined via your starter pack</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 sent a notification</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -550,6 +578,18 @@
     </message>
     <message>
         <source>%1 unread notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 liked your repost</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 reposted your repost</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 joined via your starter pack</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

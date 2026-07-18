@@ -11,13 +11,23 @@ Page {
     function reasonText(reason, name) {
         switch (reason) {
         case "like": return qsTr("%1 liked your post").arg(name)
+        case "like-via-repost": return qsTr("%1 liked your repost").arg(name)
         case "repost": return qsTr("%1 reposted your post").arg(name)
+        case "repost-via-repost": return qsTr("%1 reposted your repost").arg(name)
         case "follow": return qsTr("%1 followed you").arg(name)
         case "mention": return qsTr("%1 mentioned you").arg(name)
         case "reply": return qsTr("%1 replied to you").arg(name)
         case "quote": return qsTr("%1 quoted your post").arg(name)
-        default: return name
+        case "starterpack-joined": return qsTr("%1 joined via your starter pack").arg(name)
+        default: return qsTr("%1 sent a notification").arg(name)
         }
+    }
+
+    function openProfile(handle) {
+        pageStack.push(Qt.resolvedUrl("ProfilePage.qml"), {
+            session: page.session,
+            actor: handle
+        })
     }
 
     onStatusChanged: {
@@ -61,17 +71,26 @@ Page {
             contentHeight: row.height + 2 * Theme.paddingMedium
 
             onClicked: {
+                // Threads can only show real post records; like/repost
+                // notification uris point at the like/repost record itself,
+                // so prefer reasonSubject and fall back to the profile.
+                function isPost(u) {
+                    return u.indexOf("/app.bsky.feed.post/") >= 0
+                }
                 if (reason === "follow") {
-                    pageStack.push(Qt.resolvedUrl("ProfilePage.qml"), {
-                        session: page.session,
-                        actor: authorHandle
-                    })
-                } else {
+                    page.openProfile(authorHandle)
+                } else if (isPost(reasonSubject)) {
                     pageStack.push(Qt.resolvedUrl("ThreadPage.qml"), {
                         session: page.session,
-                        postUri: (reason === "like" || reason === "repost")
-                                 ? reasonSubject : uri
+                        postUri: reasonSubject
                     })
+                } else if (isPost(uri)) {
+                    pageStack.push(Qt.resolvedUrl("ThreadPage.qml"), {
+                        session: page.session,
+                        postUri: uri
+                    })
+                } else {
+                    page.openProfile(authorHandle)
                 }
             }
 
@@ -100,6 +119,11 @@ Page {
                     source: authorAvatar
                     asynchronous: true
                     fillMode: Image.PreserveAspectCrop
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: page.openProfile(authorHandle)
+                    }
                 }
 
                 Column {

@@ -7,11 +7,14 @@ CoverBackground {
     function reasonText(reason, name) {
         switch (reason) {
         case "like": return qsTr("%1 liked your post").arg(name)
+        case "like-via-repost": return qsTr("%1 liked your repost").arg(name)
         case "repost": return qsTr("%1 reposted your post").arg(name)
+        case "repost-via-repost": return qsTr("%1 reposted your repost").arg(name)
         case "follow": return qsTr("%1 followed you").arg(name)
         case "mention": return qsTr("%1 mentioned you").arg(name)
         case "reply": return qsTr("%1 replied to you").arg(name)
         case "quote": return qsTr("%1 quoted your post").arg(name)
+        case "starterpack-joined": return qsTr("%1 joined via your starter pack").arg(name)
         default: return name
         }
     }
