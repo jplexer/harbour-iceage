@@ -116,6 +116,7 @@ QVariantMap parseVideo(const QJsonObject &post)
     if (videoView.isEmpty())
         return video;
     const QJsonObject aspect = videoView.value(QStringLiteral("aspectRatio")).toObject();
+    video.insert(QStringLiteral("cid"), videoView.value(QStringLiteral("cid")).toString());
     video.insert(QStringLiteral("playlist"),
                  videoView.value(QStringLiteral("playlist")).toString());
     video.insert(QStringLiteral("thumbnail"),

@@ -120,6 +120,21 @@
     </message>
 </context>
 <context>
+    <name>ImagePage</name>
+    <message>
+        <source>Saved to Gallery</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Download failed: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save to Gallery</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>LoginPage</name>
     <message>
         <source>Sign in to Bluesky</source>
@@ -171,6 +186,21 @@
     </message>
     <message>
         <source>Sign in with app password</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MediaDownloader</name>
+    <message>
+        <source>Unsupported DID method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not resolve the author&apos;s server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Could not write %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -426,6 +456,18 @@
     <name>VideoPage</name>
     <message>
         <source>Could not play video</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saved to Videos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Download failed: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save video</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -35,7 +35,8 @@ SOURCES += src/harbour-iceage.cpp \
     src/actormodelbase.cpp \
     src/actorsearchmodel.cpp \
     src/actorlistmodel.cpp \
-    src/feedlistmodel.cpp
+    src/feedlistmodel.cpp \
+    src/mediadownloader.cpp
 
 HEADERS += src/xrpcclient.h \
     src/session.h \
@@ -53,7 +54,8 @@ HEADERS += src/xrpcclient.h \
     src/actormodelbase.h \
     src/actorsearchmodel.h \
     src/actorlistmodel.h \
-    src/feedlistmodel.h
+    src/feedlistmodel.h \
+    src/mediadownloader.h
 
 DISTFILES += qml/harbour-iceage.qml \
     qml/cover/CoverPage.qml \

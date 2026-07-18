@@ -1,14 +1,24 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import QtMultimedia 5.6
+import harbour.iceage 1.0
 
 Page {
     id: page
 
     property alias source: player.source
     property string altText
+    // For downloading the original blob from the author's PDS
+    property string videoDid
+    property string videoCid
 
     allowedOrientations: Orientation.All
+
+    MediaDownloader {
+        id: downloader
+        onFinished: Notices.show(qsTr("Saved to Videos"))
+        onDownloadError: Notices.show(qsTr("Download failed: %1").arg(message))
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -25,13 +35,28 @@ Page {
         source: player
     }
 
-    MouseArea {
+    SilicaFlickable {
         anchors.fill: parent
-        onClicked: {
-            if (player.playbackState === MediaPlayer.PlayingState) {
-                player.pause()
-            } else {
-                player.play()
+        contentHeight: height
+
+        PullDownMenu {
+            busy: downloader.busy
+            MenuItem {
+                visible: page.videoDid.length > 0 && page.videoCid.length > 0
+                text: qsTr("Save video")
+                enabled: !downloader.busy
+                onClicked: downloader.downloadVideo(page.videoDid, page.videoCid)
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                if (player.playbackState === MediaPlayer.PlayingState) {
+                    player.pause()
+                } else {
+                    player.play()
+                }
             }
         }
     }

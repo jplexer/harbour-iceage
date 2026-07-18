@@ -245,7 +245,9 @@ ListItem {
                 onPressAndHold: postItem.showMenu()
                 onClicked: pageStack.push(Qt.resolvedUrl("../pages/VideoPage.qml"), {
                     source: video.playlist,
-                    altText: video.alt !== undefined ? video.alt : ""
+                    altText: video.alt !== undefined ? video.alt : "",
+                    videoDid: authorDid,
+                    videoCid: video.cid !== undefined ? video.cid : ""
                 })
             }
         }

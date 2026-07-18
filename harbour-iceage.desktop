@@ -19,4 +19,5 @@ ApplicationName=harbour-iceage
 # Internet: talking to the Bluesky PDS and loading avatars/images
 # Secrets: sailfishsecretsd access for token/DPoP-key storage
 # Pictures + MediaIndexing: gallery picker for attaching images to posts
-Permissions=Internet;Secrets;Notifications;Audio;Pictures;MediaIndexing
+# Videos: saving downloaded videos
+Permissions=Internet;Secrets;Notifications;Audio;Pictures;MediaIndexing;Videos
