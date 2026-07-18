@@ -27,12 +27,28 @@ SilicaListView {
         height: listView.headerHeight
     }
 
+    // True on someone else's profile while signed in
+    readonly property bool _otherProfile: feed.session.loggedIn
+                                          && feed.profile.did !== undefined
+                                          && feed.profile.did !== feed.session.did
+
     PullDownMenu {
         busy: feed.loading
         MenuItem {
-            visible: feed.session.loggedIn
-                     && feed.profile.did !== undefined
-                     && feed.profile.did !== feed.session.did
+            visible: listView._otherProfile
+            enabled: feed.profile.blockingUri !== "pending"
+            text: feed.profile.blockingUri !== undefined
+                  && feed.profile.blockingUri.length > 0
+                  ? qsTr("Unblock") : qsTr("Block")
+            onClicked: feed.toggleBlock()
+        }
+        MenuItem {
+            visible: listView._otherProfile
+            text: feed.profile.muted === true ? qsTr("Unmute") : qsTr("Mute")
+            onClicked: feed.toggleMute()
+        }
+        MenuItem {
+            visible: listView._otherProfile
             enabled: feed.profile.followingUri !== "pending"
             text: feed.profile.followingUri !== undefined
                   && feed.profile.followingUri.length > 0

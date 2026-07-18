@@ -76,6 +76,10 @@ void AuthorFeedModel::fetchProfile()
                        viewer.value(QStringLiteral("following")).toString());
         profile.insert(QStringLiteral("followsYou"),
                        !viewer.value(QStringLiteral("followedBy")).toString().isEmpty());
+        profile.insert(QStringLiteral("muted"),
+                       viewer.value(QStringLiteral("muted")).toBool());
+        profile.insert(QStringLiteral("blockingUri"),
+                       viewer.value(QStringLiteral("blocking")).toString());
         guard->m_profile = profile;
         emit guard->profileChanged();
     });
@@ -143,6 +147,97 @@ void AuthorFeedModel::toggleFollow()
                 return;
             guard->m_profile.insert(QStringLiteral("followingUri"), followingUri);
             guard->m_profile.insert(QStringLiteral("followersCount"), followers);
+            emit guard->errorOccurred(error);
+            emit guard->profileChanged();
+        });
+    }
+}
+
+void AuthorFeedModel::toggleMute()
+{
+    if (!session() || !session()->loggedIn())
+        return;
+    const QString did = m_profile.value(QStringLiteral("did")).toString();
+    if (did.isEmpty())
+        return;
+    const bool muted = m_profile.value(QStringLiteral("muted")).toBool();
+
+    m_profile.insert(QStringLiteral("muted"), !muted);
+    emit profileChanged();
+
+    QJsonObject body;
+    body.insert(QStringLiteral("actor"), did);
+    const QString endpoint = muted
+            ? QStringLiteral("app.bsky.graph.unmuteActor")
+            : QStringLiteral("app.bsky.graph.muteActor");
+
+    QPointer<AuthorFeedModel> guard(this);
+    session()->postAuthorized(endpoint, body,
+                              [guard, muted](const QJsonObject &, const QString &error) {
+        if (!guard || error.isEmpty())
+            return;
+        guard->m_profile.insert(QStringLiteral("muted"), muted);
+        emit guard->errorOccurred(error);
+        emit guard->profileChanged();
+    });
+}
+
+void AuthorFeedModel::toggleBlock()
+{
+    if (!session() || !session()->loggedIn())
+        return;
+    const QString did = m_profile.value(QStringLiteral("did")).toString();
+    const QString blockingUri = m_profile.value(QStringLiteral("blockingUri")).toString();
+    if (did.isEmpty() || blockingUri == QLatin1String("pending"))
+        return;
+
+    QPointer<AuthorFeedModel> guard(this);
+
+    if (blockingUri.isEmpty()) {
+        // Block, optimistically
+        m_profile.insert(QStringLiteral("blockingUri"), QStringLiteral("pending"));
+        emit profileChanged();
+
+        QJsonObject record;
+        record.insert(QStringLiteral("$type"), QStringLiteral("app.bsky.graph.block"));
+        record.insert(QStringLiteral("subject"), did);
+        record.insert(QStringLiteral("createdAt"),
+                      QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+        QJsonObject body;
+        body.insert(QStringLiteral("repo"), session()->did());
+        body.insert(QStringLiteral("collection"), QStringLiteral("app.bsky.graph.block"));
+        body.insert(QStringLiteral("record"), record);
+
+        session()->postAuthorized(QStringLiteral("com.atproto.repo.createRecord"), body,
+                                  [guard](const QJsonObject &data, const QString &error) {
+            if (!guard)
+                return;
+            if (error.isEmpty()) {
+                guard->m_profile.insert(QStringLiteral("blockingUri"),
+                                        data.value(QStringLiteral("uri")).toString());
+            } else {
+                guard->m_profile.insert(QStringLiteral("blockingUri"), QString());
+                emit guard->errorOccurred(error);
+            }
+            emit guard->profileChanged();
+        });
+    } else {
+        // Unblock, optimistically
+        m_profile.insert(QStringLiteral("blockingUri"), QString());
+        emit profileChanged();
+
+        QJsonObject body;
+        body.insert(QStringLiteral("repo"), session()->did());
+        body.insert(QStringLiteral("collection"), QStringLiteral("app.bsky.graph.block"));
+        body.insert(QStringLiteral("rkey"),
+                    blockingUri.section(QLatin1Char('/'), -1));
+
+        session()->postAuthorized(QStringLiteral("com.atproto.repo.deleteRecord"), body,
+                                  [guard, blockingUri](const QJsonObject &,
+                                                       const QString &error) {
+            if (!guard || error.isEmpty())
+                return;
+            guard->m_profile.insert(QStringLiteral("blockingUri"), blockingUri);
             emit guard->errorOccurred(error);
             emit guard->profileChanged();
         });

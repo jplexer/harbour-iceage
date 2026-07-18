@@ -26,6 +26,10 @@ public:
     // Follow or unfollow this profile (app.bsky.graph.follow record),
     // optimistically updating the profile map.
     Q_INVOKABLE void toggleFollow();
+    // Mute/unmute (app.bsky.graph.muteActor) and block/unblock
+    // (app.bsky.graph.block record), same optimistic pattern.
+    Q_INVOKABLE void toggleMute();
+    Q_INVOKABLE void toggleBlock();
 
 signals:
     void actorChanged();

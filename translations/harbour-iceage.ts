@@ -236,6 +236,22 @@
         <source>Following (%1)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Unblock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unmute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mute</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProfilePage</name>
