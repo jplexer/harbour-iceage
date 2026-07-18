@@ -2,6 +2,36 @@
 <!DOCTYPE TS>
 <TS version="2.1">
 <context>
+    <name>ActorDelegate</name>
+    <message>
+        <source>Follows you</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ActorListPage</name>
+    <message>
+        <source>Following</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Followers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Not following anyone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No followers yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ComposePage</name>
     <message>
         <source>Reply to @%1</source>
@@ -206,15 +236,23 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>%1 posts · %2 followers · %3 following</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Posts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Posts &amp; replies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 posts ·</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 followers ·</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 following</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -238,10 +276,6 @@
     </message>
     <message>
         <source>No posts found</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Follows you</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
