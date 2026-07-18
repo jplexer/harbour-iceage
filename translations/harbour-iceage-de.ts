@@ -251,10 +251,6 @@
         <source>Posts &amp; replies</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>%1 posts · %2 followers · %3 following</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>SearchPage</name>

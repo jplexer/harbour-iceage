@@ -162,21 +162,6 @@ Page {
                     }
                 }
 
-                Label {
-                    x: Theme.horizontalPageMargin
-                    width: parent.width - 2 * Theme.horizontalPageMargin
-                    visible: feedPosts.profile.handle !== undefined
-                    text: qsTr("%1 posts · %2 followers · %3 following")
-                          .arg(feedPosts.profile.postsCount !== undefined
-                               ? feedPosts.profile.postsCount : 0)
-                          .arg(feedPosts.profile.followersCount !== undefined
-                               ? feedPosts.profile.followersCount : 0)
-                          .arg(feedPosts.profile.followsCount !== undefined
-                               ? feedPosts.profile.followsCount : 0)
-                    font.pixelSize: Theme.fontSizeExtraSmall
-                    color: Theme.secondaryHighlightColor
-                }
-
                 Item {
                     width: parent.width
                     height: Theme.paddingMedium
