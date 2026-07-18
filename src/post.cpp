@@ -187,6 +187,7 @@ QHash<int, QByteArray> roleNames()
     QHash<int, QByteArray> roles;
     roles.insert(Uri, "uri");
     roles.insert(Cid, "cid");
+    roles.insert(AuthorDid, "authorDid");
     roles.insert(AuthorHandle, "authorHandle");
     roles.insert(AuthorName, "authorName");
     roles.insert(AuthorAvatar, "authorAvatar");
@@ -216,6 +217,7 @@ QVariant data(const Post &post, int role)
     switch (role) {
     case Uri: return post.uri;
     case Cid: return post.cid;
+    case AuthorDid: return post.authorDid;
     case AuthorHandle: return post.authorHandle;
     case AuthorName: return post.authorName;
     case AuthorAvatar: return post.authorAvatar;

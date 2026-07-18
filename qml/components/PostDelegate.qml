@@ -54,6 +54,13 @@ ListItem {
                   .arg(likeCount)
             onClicked: feedModel.toggleLike(index)
         }
+        MenuItem {
+            visible: authorDid === feedModel.session.did
+            text: qsTr("Delete")
+            onClicked: postItem.remorseDelete(function() {
+                feedModel.deletePost(index)
+            })
+        }
     }
 
     Rectangle {

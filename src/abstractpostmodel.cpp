@@ -70,6 +70,37 @@ void AbstractPostModel::toggleRepost(int row)
                  &Post::repostCount);
 }
 
+void AbstractPostModel::deletePost(int row)
+{
+    if (!m_session || !m_session->loggedIn() || row < 0 || row >= m_posts.count())
+        return;
+    const Post post = m_posts.at(row);
+    if (post.authorDid != m_session->did())
+        return;
+
+    // Remove optimistically; put the row back if the server refuses
+    beginRemoveRows(QModelIndex(), row, row);
+    m_posts.removeAt(row);
+    endRemoveRows();
+
+    QJsonObject body;
+    body.insert(QStringLiteral("repo"), m_session->did());
+    body.insert(QStringLiteral("collection"), QStringLiteral("app.bsky.feed.post"));
+    body.insert(QStringLiteral("rkey"), post.uri.section(QLatin1Char('/'), -1));
+
+    QPointer<AbstractPostModel> guard(this);
+    m_session->postAuthorized(QStringLiteral("com.atproto.repo.deleteRecord"), body,
+                              [guard, post, row](const QJsonObject &, const QString &error) {
+        if (!guard || error.isEmpty())
+            return;
+        const int r = qMin(row, guard->m_posts.count());
+        guard->beginInsertRows(QModelIndex(), r, r);
+        guard->m_posts.insert(r, post);
+        guard->endInsertRows();
+        emit guard->errorOccurred(error);
+    });
+}
+
 void AbstractPostModel::toggleRecord(int row, const QString &collection,
                                      QString Post::*recordUri, int Post::*count)
 {

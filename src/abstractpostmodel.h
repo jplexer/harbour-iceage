@@ -27,6 +27,8 @@ public:
 
     Q_INVOKABLE void toggleLike(int row);
     Q_INVOKABLE void toggleRepost(int row);
+    // Deletes the viewer's own post, optimistically removing the row.
+    Q_INVOKABLE void deletePost(int row);
 
 signals:
     void sessionChanged();

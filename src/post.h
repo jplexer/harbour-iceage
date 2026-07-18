@@ -44,6 +44,7 @@ namespace PostRoles {
 enum Role {
     Uri = Qt::UserRole + 1,
     Cid,
+    AuthorDid,
     AuthorHandle,
     AuthorName,
     AuthorAvatar,
