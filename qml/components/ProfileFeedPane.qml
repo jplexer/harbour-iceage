@@ -2,14 +2,20 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 
 // One pane of the profile pager: a single filtered author feed. The
-// profile header sits above the pager in ProfilePage and collapses
-// based on this list's scroll position.
+// profile header floats above the pager in ProfilePage, glued to this
+// list's scroll position; the spacer header reserves its space.
 SilicaListView {
     id: listView
 
     property var feed
+    property real headerHeight
 
     model: feed
+
+    header: Item {
+        width: 1
+        height: listView.headerHeight
+    }
 
     PullDownMenu {
         busy: feed.loading

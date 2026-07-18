@@ -9,20 +9,15 @@ Page {
     property Session session
     property string actor
 
-    // The header collapses to just the tab row once the active feed is
-    // scrolled, and expands again when it returns to the top. Snap
-    // animation instead of pixel-tracking keeps the feed below the
-    // header (nothing renders behind it), so the header needs no
-    // backdrop and the normal page background shows through.
-    property bool _collapsed: false
-    readonly property real _contentY: pager.currentItem ? pager.currentItem.contentY : 0
-
-    on_ContentYChanged: {
-        if (_contentY > Theme.itemSizeLarge)
-            _collapsed = true
-        else if (_contentY <= 0)
-            _collapsed = false
-    }
+    // The header is glued to the top of the feed content: it scrolls up
+    // with the top post until only the tab row remains, and rides back
+    // down the same way. The panes reserve its space with a spacer, so
+    // the header body never overlaps posts and needs no backdrop; only
+    // the sticky tab row gets a panel gradient for posts passing under.
+    readonly property real _headerOffset: pager.currentItem
+        ? Math.min(pager.currentItem.contentY + headerArea.height,
+                   headerArea.height - tabRow.height)
+        : 0
 
     AuthorFeedModel {
         id: feedPosts
@@ -44,16 +39,9 @@ Page {
 
     Item {
         id: headerArea
-        y: page._collapsed ? -(headerColumn.height - tabRow.height) : 0
+        y: -page._headerOffset
         width: parent.width
         height: headerColumn.height
-
-        Behavior on y {
-            NumberAnimation {
-                duration: 200
-                easing.type: Easing.InOutQuad
-            }
-        }
 
         Column {
             id: headerColumn
@@ -108,16 +96,26 @@ Page {
             }
 
             Label {
+                id: bioLabel
+
+                property bool expanded: false
+
                 x: Theme.horizontalPageMargin
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 wrapMode: Text.Wrap
-                maximumLineCount: 4
+                maximumLineCount: expanded ? 1000 : 4
                 elide: Text.ElideRight
                 visible: text.length > 0
                 text: feedPosts.profile.description !== undefined
                       ? feedPosts.profile.description : ""
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.primaryColor
+
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: bioLabel.truncated || bioLabel.expanded
+                    onClicked: bioLabel.expanded = !bioLabel.expanded
+                }
             }
 
             Label {
@@ -140,35 +138,56 @@ Page {
                 height: Theme.paddingMedium
             }
 
-            Row {
+            Item {
                 id: tabRow
                 width: parent.width
+                height: Theme.itemSizeSmall
 
-                Repeater {
-                    model: [qsTr("Posts"), qsTr("Posts & replies")]
-
-                    BackgroundItem {
-                        width: parent.width / 2
-                        height: Theme.itemSizeSmall
-                        onClicked: pager.currentIndex = index
-
-                        Label {
-                            anchors.centerIn: parent
-                            text: modelData
-                            font.pixelSize: Theme.fontSizeSmall
-                            color: pager.currentIndex === index
-                                   ? Theme.highlightColor : Theme.secondaryColor
+                // Posts scroll under the sticky tab row; standard panel
+                // gradient like DockedPanel uses
+                Rectangle {
+                    anchors.fill: parent
+                    gradient: Gradient {
+                        GradientStop {
+                            position: 0.0
+                            color: Theme.rgba(Theme.highlightBackgroundColor, 0.15)
                         }
+                        GradientStop {
+                            position: 1.0
+                            color: Theme.rgba(Theme.highlightBackgroundColor, 0.3)
+                        }
+                    }
+                }
 
-                        Rectangle {
-                            anchors {
-                                left: parent.left
-                                right: parent.right
-                                bottom: parent.bottom
+                Row {
+                    anchors.fill: parent
+
+                    Repeater {
+                        model: [qsTr("Posts"), qsTr("Posts & replies")]
+
+                        BackgroundItem {
+                            width: parent.width / 2
+                            height: parent.height
+                            onClicked: pager.currentIndex = index
+
+                            Label {
+                                anchors.centerIn: parent
+                                text: modelData
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: pager.currentIndex === index
+                                       ? Theme.highlightColor : Theme.secondaryColor
                             }
-                            height: Math.round(Theme.pixelRatio * 2)
-                            color: Theme.highlightColor
-                            visible: pager.currentIndex === index
+
+                            Rectangle {
+                                anchors {
+                                    left: parent.left
+                                    right: parent.right
+                                    bottom: parent.bottom
+                                }
+                                height: Math.round(Theme.pixelRatio * 2)
+                                color: Theme.highlightColor
+                                visible: pager.currentIndex === index
+                            }
                         }
                     }
                 }
@@ -176,16 +195,12 @@ Page {
         }
     }
 
-    // Horizontal, non-circular pager below the header: swipe between
-    // Posts and Posts & replies, rubber-banding at the ends.
+    // Horizontal, non-circular pager: swipe between Posts and
+    // Posts & replies, rubber-banding at the right end.
     ListView {
         id: pager
-        anchors {
-            top: headerArea.bottom
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-        }
+        anchors.fill: parent
+        z: -1
         orientation: ListView.Horizontal
         snapMode: ListView.SnapOneItem
         highlightRangeMode: ListView.StrictlyEnforceRange
@@ -205,6 +220,7 @@ Page {
             width: pager.width
             height: pager.height
             feed: modelData
+            headerHeight: headerArea.height
         }
     }
 }
