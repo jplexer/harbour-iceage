@@ -13,6 +13,9 @@ public:
 
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void loadMore();
+    // Fetches the newest page and prepends only unseen posts, keeping
+    // the scroll position; falls back to a full reset on a gap.
+    Q_INVOKABLE void loadNewer();
 
 private:
     void fetch(bool reset);

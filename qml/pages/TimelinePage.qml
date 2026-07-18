@@ -71,7 +71,7 @@ Page {
             MenuItem {
                 text: qsTr("Refresh")
                 visible: session.loggedIn
-                onClicked: timeline.refresh()
+                onClicked: timeline.loadNewer()
             }
         }
 

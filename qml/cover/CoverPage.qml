@@ -82,7 +82,7 @@ CoverBackground {
         CoverAction {
             iconSource: "image://theme/icon-cover-refresh"
             onTriggered: {
-                timelineModel.refresh()
+                timelineModel.loadNewer()
                 notificationsModel.poll()
                 notificationsModel.refresh()
             }
