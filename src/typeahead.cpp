@@ -1,5 +1,6 @@
 #include "typeahead.h"
 
+#include <QDebug>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QPointer>
@@ -51,8 +52,12 @@ void Typeahead::fire()
                              params,
                              [guard, generation](const QJsonObject &data,
                                                  const QString &error) {
-        if (!guard || guard->m_generation != generation || !error.isEmpty())
+        if (!guard || guard->m_generation != generation)
             return;
+        if (!error.isEmpty()) {
+            qWarning() << "typeahead failed:" << error;
+            return;
+        }
         QVariantList suggestions;
         const QJsonArray actors = data.value(QStringLiteral("actors")).toArray();
         for (const QJsonValue &value : actors) {

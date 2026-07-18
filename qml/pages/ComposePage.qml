@@ -80,6 +80,11 @@ Page {
                 width: parent.width
                 placeholderText: page.isReply ? qsTr("Write your reply") : qsTr("What's up?")
                 focus: true
+                // Predictive text holds keystrokes in the keyboard's
+                // pre-edit buffer, so text/cursorPosition would only
+                // update at word boundaries and autocomplete would
+                // never see a partial @handle or #tag
+                inputMethodHints: Qt.ImhNoPredictiveText
                 onTextChanged: page.updateSuggestions()
                 onCursorPositionChanged: page.updateSuggestions()
             }
