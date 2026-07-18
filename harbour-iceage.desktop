@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=harbour-iceage
+Exec=harbour-iceage
+Name=Ice Age
+# translation example:
+# your app name in German locale (de)
+#
+# Remember to comment out the following line, if you do not want to use
+# a different app name in German locale (de).
+Name[de]=Ice Age
+
+[X-Sailjail]
+# Replace with your organization as a reverse domain name
+OrganizationName=me.funnyna
+# ApplicationName does not have to be identical to Name
+ApplicationName=harbour-iceage
+# Internet: talking to the Bluesky PDS and loading avatars/images
+# Secrets: sailfishsecretsd access for token/DPoP-key storage
+Permissions=Internet;Secrets;Notifications;Audio

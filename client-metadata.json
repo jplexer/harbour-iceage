@@ -1,0 +1,12 @@
+{
+  "client_id": "https://funnyna.me/iceage/client-metadata.json",
+  "client_name": "Ice Age",
+  "client_uri": "https://funnyna.me/iceage",
+  "application_type": "native",
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "redirect_uris": ["http://127.0.0.1/callback"],
+  "scope": "atproto transition:generic",
+  "token_endpoint_auth_method": "none",
+  "dpop_bound_access_tokens": true
+}

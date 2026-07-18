@@ -1,0 +1,13 @@
+# Build artifacts (sfdk builds in-tree)
+*.o
+moc_*.cpp
+Makefile
+documentation.list
+harbour-iceage
+!harbour-iceage.pro
+!harbour-iceage.desktop
+RPMS/
+.sfdk/
+
+# Qt Creator user state
+*.pro.user
