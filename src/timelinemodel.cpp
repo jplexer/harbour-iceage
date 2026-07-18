@@ -3,10 +3,26 @@
 #include <QJsonArray>
 #include <QPointer>
 #include <QSet>
+#include <QSettings>
+#include <QStandardPaths>
+
+namespace {
+// Same sandbox-writable file Session uses (see session.cpp)
+QString settingsPath()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)
+            + QStringLiteral("/settings.conf");
+}
+}
 
 TimelineModel::TimelineModel(QObject *parent)
     : AbstractPostModel(parent)
 {
+    // Restore the last selected feed; the login-triggered refresh
+    // fetches it
+    QSettings settings(settingsPath(), QSettings::IniFormat);
+    m_feedUri = settings.value(QStringLiteral("timeline/feedUri")).toString();
+    m_feedName = settings.value(QStringLiteral("timeline/feedName")).toString();
 }
 
 void TimelineModel::setFeedUri(const QString &feedUri)
@@ -14,6 +30,8 @@ void TimelineModel::setFeedUri(const QString &feedUri)
     if (m_feedUri == feedUri)
         return;
     m_feedUri = feedUri;
+    QSettings settings(settingsPath(), QSettings::IniFormat);
+    settings.setValue(QStringLiteral("timeline/feedUri"), m_feedUri);
     emit feedUriChanged();
     m_cursor.clear();
     fetch(true);
@@ -24,6 +42,8 @@ void TimelineModel::setFeedName(const QString &feedName)
     if (m_feedName == feedName)
         return;
     m_feedName = feedName;
+    QSettings settings(settingsPath(), QSettings::IniFormat);
+    settings.setValue(QStringLiteral("timeline/feedName"), m_feedName);
     emit feedNameChanged();
 }
 
