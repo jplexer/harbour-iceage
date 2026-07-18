@@ -131,13 +131,9 @@ Page {
                 Label {
                     id: bioLabel
 
-                    property bool expanded: false
-
                     x: Theme.horizontalPageMargin
                     width: parent.width - 2 * Theme.horizontalPageMargin
                     wrapMode: Text.Wrap
-                    maximumLineCount: expanded ? 1000 : 4
-                    elide: Text.ElideRight
                     visible: text.length > 0
                     textFormat: Text.StyledText
                     text: LinkUtils.linkify(feedPosts.profile.description !== undefined
@@ -146,18 +142,13 @@ Page {
                     color: Theme.primaryColor
                     linkColor: Theme.highlightColor
 
-                    // One MouseArea for both jobs: taps on a link open it,
-                    // taps elsewhere toggle the truncated bio
                     MouseArea {
                         anchors.fill: parent
-                        enabled: bioLabel.truncated || bioLabel.expanded
-                                 || bioLabel.text.indexOf("<a ") >= 0
+                        enabled: bioLabel.text.indexOf("<a ") >= 0
                         onClicked: {
                             var link = bioLabel.linkAt(mouse.x, mouse.y)
                             if (link.length > 0)
                                 page.openLink(link)
-                            else if (bioLabel.truncated || bioLabel.expanded)
-                                bioLabel.expanded = !bioLabel.expanded
                         }
                     }
                 }
