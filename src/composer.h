@@ -30,6 +30,8 @@ public:
 
     Q_INVOKABLE void addImage(const QString &pathOrUrl);
     Q_INVOKABLE void removeImage(int index);
+    // Hashtag autocomplete from tags seen in parsed posts
+    Q_INVOKABLE QStringList suggestTags(const QString &prefix) const;
 
     // Reply parameters are empty for a top-level post.
     Q_INVOKABLE void post(const QString &text,

@@ -277,6 +277,18 @@
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Share</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 on Bluesky</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Share post</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProfileFeedPane</name>

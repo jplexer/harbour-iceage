@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#include "tagstore.h"
+
 namespace {
 
 int byteOffset(const QString &text, int charOffset)
@@ -97,6 +99,7 @@ QJsonArray detectFacets(const QString &text, const QHash<QString, QString> &ment
     QRegularExpressionMatchIterator tags = tagRe.globalMatch(text);
     while (tags.hasNext()) {
         const QRegularExpressionMatch m = tags.next();
+        TagStore::add(m.captured(1).mid(1));
         facets.append(makeFacet(text, m.capturedStart(1), m.capturedEnd(1),
                                 QStringLiteral("app.bsky.richtext.facet#tag"),
                                 QStringLiteral("tag"), m.captured(1).mid(1)));
@@ -157,6 +160,11 @@ void Composer::removeImage(int index)
         return;
     m_images.removeAt(index);
     emit imagesChanged();
+}
+
+QStringList Composer::suggestTags(const QString &prefix) const
+{
+    return TagStore::suggest(prefix);
 }
 
 void Composer::post(const QString &text, const QString &replyParentUri,

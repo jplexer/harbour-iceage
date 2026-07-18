@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+#include "tagstore.h"
+
 namespace {
 
 // Renders post text plus richtext facets as StyledText HTML. Facet indices
@@ -36,8 +38,9 @@ QString renderRichText(const QString &text, const QJsonArray &facets)
                 href = QStringLiteral("https://bsky.app/profile/")
                         + feature.value(QStringLiteral("did")).toString();
             } else if (type == QLatin1String("app.bsky.richtext.facet#tag")) {
-                href = QStringLiteral("https://bsky.app/hashtag/")
-                        + feature.value(QStringLiteral("tag")).toString();
+                const QString tag = feature.value(QStringLiteral("tag")).toString();
+                TagStore::add(tag); // feed the composer's autocomplete
+                href = QStringLiteral("https://bsky.app/hashtag/") + tag;
             }
         }
         if (!href.isEmpty() && start >= 0 && end > start && end <= utf8.size())

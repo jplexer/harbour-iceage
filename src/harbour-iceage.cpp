@@ -20,6 +20,7 @@
 #include "session.h"
 #include "threadmodel.h"
 #include "timelinemodel.h"
+#include "typeahead.h"
 
 int main(int argc, char *argv[])
 {
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<ActorListModel>("harbour.iceage", 1, 0, "ActorListModel");
     qmlRegisterType<FeedListModel>("harbour.iceage", 1, 0, "FeedListModel");
     qmlRegisterType<MediaDownloader>("harbour.iceage", 1, 0, "MediaDownloader");
+    qmlRegisterType<Typeahead>("harbour.iceage", 1, 0, "Typeahead");
 
     QScopedPointer<QQuickView> view(SailfishApp::createView());
     view->setSource(SailfishApp::pathToMainQml());

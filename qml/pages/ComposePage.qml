@@ -16,11 +16,50 @@ Page {
     readonly property int maxLength: 300
     readonly property bool isReply: replyParentUri.length > 0
 
+    // Autocomplete for the @mention / #hashtag token at the cursor
+    property int _tokenStart: 0
+    property var _tagSuggestions: []
+
+    function updateSuggestions() {
+        var pos = textArea.cursorPosition
+        var text = textArea.text
+        var start = pos
+        while (start > 0 && !/[\s(]/.test(text.charAt(start - 1)))
+            start--
+        page._tokenStart = start
+        var word = text.substring(start, pos)
+        if (word.length >= 2 && word.charAt(0) === '@') {
+            typeahead.query(word.substring(1))
+            page._tagSuggestions = []
+        } else if (word.length >= 2 && word.charAt(0) === '#') {
+            page._tagSuggestions = composer.suggestTags(word.substring(1))
+            typeahead.clear()
+        } else {
+            typeahead.clear()
+            page._tagSuggestions = []
+        }
+    }
+
+    function applySuggestion(replacement) {
+        var text = textArea.text
+        var pos = textArea.cursorPosition
+        textArea.text = text.substring(0, page._tokenStart) + replacement + " "
+                + text.substring(pos)
+        textArea.cursorPosition = page._tokenStart + replacement.length + 1
+        typeahead.clear()
+        page._tagSuggestions = []
+    }
+
     Composer {
         id: composer
         session: page.session
         onPosted: pageStack.pop()
         onPostError: errorLabel.text = message
+    }
+
+    Typeahead {
+        id: typeahead
+        session: page.session
     }
 
     SilicaFlickable {
@@ -41,6 +80,68 @@ Page {
                 width: parent.width
                 placeholderText: page.isReply ? qsTr("Write your reply") : qsTr("What's up?")
                 focus: true
+                onTextChanged: page.updateSuggestions()
+                onCursorPositionChanged: page.updateSuggestions()
+            }
+
+            Column {
+                width: parent.width
+                visible: typeahead.suggestions.length > 0
+                         || page._tagSuggestions.length > 0
+
+                Repeater {
+                    model: typeahead.suggestions
+
+                    BackgroundItem {
+                        width: parent.width
+                        height: Theme.itemSizeSmall
+                        onClicked: page.applySuggestion("@" + modelData.handle)
+
+                        Image {
+                            id: suggestionAvatar
+                            x: Theme.horizontalPageMargin
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: Theme.iconSizeSmall
+                            height: Theme.iconSizeSmall
+                            source: modelData.avatar
+                            asynchronous: true
+                            fillMode: Image.PreserveAspectCrop
+                        }
+
+                        Label {
+                            anchors {
+                                left: suggestionAvatar.right
+                                leftMargin: Theme.paddingMedium
+                                right: parent.right
+                                rightMargin: Theme.horizontalPageMargin
+                                verticalCenter: parent.verticalCenter
+                            }
+                            truncationMode: TruncationMode.Fade
+                            text: modelData.displayName
+                                  + " · @" + modelData.handle
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.primaryColor
+                        }
+                    }
+                }
+
+                Repeater {
+                    model: page._tagSuggestions
+
+                    BackgroundItem {
+                        width: parent.width
+                        height: Theme.itemSizeSmall
+                        onClicked: page.applySuggestion("#" + modelData)
+
+                        Label {
+                            x: Theme.horizontalPageMargin
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "#" + modelData
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.highlightColor
+                        }
+                    }
+                }
             }
 
             Label {
