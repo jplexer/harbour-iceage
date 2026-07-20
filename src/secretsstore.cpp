@@ -3,8 +3,11 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QSettings>
+#include <QStandardPaths>
 
 #include <Sailfish/Secrets/createcollectionrequest.h>
+#include <Sailfish/Secrets/deletecollectionrequest.h>
 #include <Sailfish/Secrets/deletesecretrequest.h>
 #include <Sailfish/Secrets/result.h>
 #include <Sailfish/Secrets/secret.h>
@@ -15,6 +18,19 @@ using namespace Sailfish::Secrets;
 
 namespace {
 const QString kCollectionName = QStringLiteral("iceage");
+
+// A collection keeps the lock semantics it was created with, so parameter
+// changes here only take effect after dropping the old collection. Bump
+// this to force a drop-and-recreate on existing installs (logs the user
+// out once, since the stored tokens go with it).
+const int kCollectionVersion = 2;
+const QString kCollectionVersionKey = QStringLiteral("secrets/collectionVersion");
+
+QString settingsPath()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)
+            + QStringLiteral("/settings.conf");
+}
 
 Secret::Identifier identifier(const QString &name)
 {
@@ -48,6 +64,26 @@ void SecretsStore::ensureCollection()
     if (m_collectionEnsured)
         return;
     waitForDaemon();
+
+    QSettings settings(settingsPath(), QSettings::IniFormat);
+    if (settings.value(kCollectionVersionKey, 1).toInt() < kCollectionVersion) {
+        DeleteCollectionRequest dropRequest;
+        dropRequest.setManager(&m_manager);
+        dropRequest.setCollectionName(kCollectionName);
+        dropRequest.setStoragePluginName(SecretManager::DefaultEncryptedStoragePluginName);
+        dropRequest.setUserInteractionMode(SecretManager::SystemInteraction);
+        dropRequest.startRequest();
+        dropRequest.waitForFinished();
+
+        if (dropRequest.result().code() == Result::Failed
+                && dropRequest.result().errorCode() != Result::InvalidCollectionError) {
+            // Keep the old collection working this run; retry next launch
+            qWarning() << "SecretsStore: failed to drop outdated collection:"
+                       << dropRequest.result().errorMessage();
+        } else {
+            settings.setValue(kCollectionVersionKey, kCollectionVersion);
+        }
+    }
 
     CreateCollectionRequest request;
     request.setManager(&m_manager);
