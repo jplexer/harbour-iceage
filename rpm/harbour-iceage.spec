@@ -20,6 +20,20 @@ BuildRequires:  desktop-file-utils
 %description
 A Bluesky client for Sailfish
 
+%if 0%{?_chum}
+Title: Ice Age
+Type: desktop-application
+DeveloperName: jplexer
+Categories:
+ - Network
+Custom:
+  Repo: https://github.com/jplexer/harbour-iceage
+PackageIcon: https://github.com/jplexer/harbour-iceage/raw/main/icons/harbour-iceage.svg
+Links:
+  Homepage: https://funnyna.me
+  Bugtracker: https://github.com/jplexer/harbour-iceage/issues
+%endif
+
 
 %prep
 %setup -q -n %{name}-%{version}
