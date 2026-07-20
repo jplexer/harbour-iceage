@@ -20,5 +20,6 @@ ApplicationName=harbour-iceage
 # Secrets: sailfishsecretsd access for token/DPoP-key storage
 # Pictures + MediaIndexing: gallery picker for attaching images to posts
 # Videos: saving downloaded videos
-# Sharing: system share sheet for post links
-Permissions=Internet;Secrets;Notifications;Audio;Pictures;MediaIndexing;Videos;Sharing
+# (Notifications and Sharing come with the sailjail Base profile;
+#  declaring them is rejected by the Harbour validator)
+Permissions=Internet;Secrets;Audio;Pictures;MediaIndexing;Videos
