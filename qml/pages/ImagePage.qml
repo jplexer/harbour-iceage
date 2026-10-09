@@ -83,7 +83,9 @@ Page {
         visible: page.images.length > 1
         anchors {
             top: parent.top
+            // Clear the display cutout (portrait only, like PageHeader)
             topMargin: Theme.paddingLarge
+                       + (page.orientation === Orientation.Portrait ? Screen.topCutout.height : 0)
             horizontalCenter: parent.horizontalCenter
         }
         text: qsTr("%1 / %2").arg(pager.currentIndex + 1).arg(page.images.length)
