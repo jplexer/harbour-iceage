@@ -242,6 +242,23 @@ Page {
                 }
             }
 
+            // Threadgates belong to the thread root, so only new posts
+            ComboBox {
+                readonly property var gates: ["", "following", "followers", "mentioned", "nobody"]
+                width: parent.width
+                visible: !page.isReply
+                enabled: !composer.busy
+                label: qsTr("Who can reply")
+                menu: ContextMenu {
+                    MenuItem { text: qsTr("Everyone") }
+                    MenuItem { text: qsTr("People you follow") }
+                    MenuItem { text: qsTr("Your followers") }
+                    MenuItem { text: qsTr("People you mention") }
+                    MenuItem { text: qsTr("Nobody") }
+                }
+                onCurrentIndexChanged: composer.replyGate = gates[currentIndex]
+            }
+
             Label {
                 id: errorLabel
                 x: Theme.horizontalPageMargin

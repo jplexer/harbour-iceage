@@ -22,6 +22,9 @@ class Composer : public QObject
     // their alt texts (parallel list)
     Q_PROPERTY(QStringList images READ images NOTIFY imagesChanged)
     Q_PROPERTY(QStringList imageAlts READ imageAlts NOTIFY imagesChanged)
+    // Who may reply to a new top-level post: "" (everyone), "following",
+    // "followers", "mentioned" or "nobody". Ignored for replies.
+    Q_PROPERTY(QString replyGate READ replyGate WRITE setReplyGate NOTIFY replyGateChanged)
 public:
     explicit Composer(QObject *parent = nullptr);
 
@@ -30,6 +33,8 @@ public:
     bool busy() const { return m_busy; }
     QStringList images() const { return m_images; }
     QStringList imageAlts() const { return m_alts; }
+    QString replyGate() const { return m_replyGate; }
+    void setReplyGate(const QString &gate);
 
     Q_INVOKABLE void addImage(const QString &pathOrUrl);
     Q_INVOKABLE void removeImage(int index);
@@ -50,6 +55,7 @@ signals:
     void sessionChanged();
     void busyChanged();
     void imagesChanged();
+    void replyGateChanged();
     void posted();
     void postError(const QString &message);
 
@@ -78,6 +84,7 @@ private:
     bool m_busy = false;
     QStringList m_images;
     QStringList m_alts;
+    QString m_replyGate;
 };
 
 #endif // COMPOSER_H

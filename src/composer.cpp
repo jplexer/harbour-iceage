@@ -11,6 +11,7 @@
 
 #include <memory>
 
+#include "dpopkey.h"
 #include "tagstore.h"
 
 namespace {
@@ -127,6 +128,47 @@ QJsonArray detectFacets(const QString &text, const QHash<QString, QString> &ment
     return facets;
 }
 
+// Record key in atproto TID form: microsecond timestamp plus a random
+// 10-bit clock id, base32-sortable. Needed up front when the post and its
+// threadgate go out in one applyWrites, since they share the rkey.
+QString makeTid()
+{
+    static const char alphabet[] = "234567abcdefghijklmnopqrstuvwxyz";
+    static qint64 lastMicros = 0;
+    qint64 micros = QDateTime::currentMSecsSinceEpoch() * 1000;
+    if (micros <= lastMicros)
+        micros = lastMicros + 1;
+    lastMicros = micros;
+
+    const QByteArray random = DpopKey::randomBytes(2);
+    const quint64 clockId = ((quint8(random.at(0)) << 8) | quint8(random.at(1))) & 0x3FF;
+    quint64 value = (quint64(micros) << 10) | clockId;
+    QString tid(13, QLatin1Char('2'));
+    for (int i = 12; i >= 0; --i) {
+        tid[i] = QLatin1Char(alphabet[value & 31]);
+        value >>= 5;
+    }
+    return tid;
+}
+
+// threadgate allow rules for a Composer::replyGate value; nobody is an
+// empty list
+QJsonArray threadgateAllow(const QString &gate)
+{
+    QString rule;
+    if (gate == QLatin1String("following"))
+        rule = QStringLiteral("app.bsky.feed.threadgate#followingRule");
+    else if (gate == QLatin1String("followers"))
+        rule = QStringLiteral("app.bsky.feed.threadgate#followerRule");
+    else if (gate == QLatin1String("mentioned"))
+        rule = QStringLiteral("app.bsky.feed.threadgate#mentionRule");
+    if (rule.isEmpty())
+        return QJsonArray();
+    QJsonObject entry;
+    entry.insert(QStringLiteral("$type"), rule);
+    return QJsonArray{entry};
+}
+
 } // namespace
 
 Composer::Composer(QObject *parent)
@@ -140,6 +182,14 @@ void Composer::setSession(Session *session)
         return;
     m_session = session;
     emit sessionChanged();
+}
+
+void Composer::setReplyGate(const QString &gate)
+{
+    if (m_replyGate == gate)
+        return;
+    m_replyGate = gate;
+    emit replyGateChanged();
 }
 
 void Composer::setBusy(bool busy)
@@ -363,11 +413,42 @@ void Composer::sendRecord(const QString &text, const ReplyRefs &reply,
 
     QJsonObject body;
     body.insert(QStringLiteral("repo"), m_session->did());
-    body.insert(QStringLiteral("collection"), QStringLiteral("app.bsky.feed.post"));
-    body.insert(QStringLiteral("record"), record);
+    QString endpoint;
+    if (m_replyGate.isEmpty() || !reply.parentUri.isEmpty()) {
+        endpoint = QStringLiteral("com.atproto.repo.createRecord");
+        body.insert(QStringLiteral("collection"), QStringLiteral("app.bsky.feed.post"));
+        body.insert(QStringLiteral("record"), record);
+    } else {
+        // The threadgate lives at the post's rkey; write both atomically
+        // so a post never goes out without its reply restriction
+        const QString rkey = makeTid();
+        QJsonObject gate;
+        gate.insert(QStringLiteral("$type"), QStringLiteral("app.bsky.feed.threadgate"));
+        gate.insert(QStringLiteral("post"), QStringLiteral("at://%1/app.bsky.feed.post/%2")
+                                                    .arg(m_session->did(), rkey));
+        gate.insert(QStringLiteral("allow"), threadgateAllow(m_replyGate));
+        gate.insert(QStringLiteral("createdAt"), record.value(QStringLiteral("createdAt")));
+
+        QJsonObject postWrite;
+        postWrite.insert(QStringLiteral("$type"),
+                         QStringLiteral("com.atproto.repo.applyWrites#create"));
+        postWrite.insert(QStringLiteral("collection"), QStringLiteral("app.bsky.feed.post"));
+        postWrite.insert(QStringLiteral("rkey"), rkey);
+        postWrite.insert(QStringLiteral("value"), record);
+        QJsonObject gateWrite;
+        gateWrite.insert(QStringLiteral("$type"),
+                         QStringLiteral("com.atproto.repo.applyWrites#create"));
+        gateWrite.insert(QStringLiteral("collection"),
+                         QStringLiteral("app.bsky.feed.threadgate"));
+        gateWrite.insert(QStringLiteral("rkey"), rkey);
+        gateWrite.insert(QStringLiteral("value"), gate);
+
+        endpoint = QStringLiteral("com.atproto.repo.applyWrites");
+        body.insert(QStringLiteral("writes"), QJsonArray{postWrite, gateWrite});
+    }
 
     QPointer<Composer> guard(this);
-    m_session->postAuthorized(QStringLiteral("com.atproto.repo.createRecord"), body,
+    m_session->postAuthorized(endpoint, body,
                               [guard](const QJsonObject &, const QString &error) {
         if (!guard)
             return;
