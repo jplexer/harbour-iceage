@@ -8,6 +8,7 @@ harbour-iceage
 !harbour-iceage.desktop
 RPMS/
 .sfdk/
+.mb2/
 
 # Qt Creator user state
 *.pro.user
