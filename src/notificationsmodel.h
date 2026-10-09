@@ -53,9 +53,11 @@ signals:
     void loadingChanged();
     void unreadCountChanged();
     void errorOccurred(const QString &message);
-    // count new unread; author/reason/text describe the newest notification
+    // count new unread; author/reason/text describe the newest notification.
+    // target is what tapping it should open: a post at:// uri, or a handle
+    // for a profile; empty if unknown.
     void alert(int count, const QString &authorName, const QString &reason,
-               const QString &text);
+               const QString &text, const QString &target);
 
 private:
     struct Item {
@@ -71,6 +73,7 @@ private:
     };
 
     static Item parseItem(const QJsonObject &json);
+    static QString openTarget(const Item &item);
     void fetch(bool reset);
     void setLoading(bool loading);
     void setUnreadCount(int count);

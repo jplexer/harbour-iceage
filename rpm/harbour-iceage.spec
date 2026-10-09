@@ -8,6 +8,7 @@ URL:        https://funnyna.me
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfishsilica-qt5 >= 0.10.9
 Requires:   nemo-qml-plugin-notifications-qt5
+Requires:   nemo-qml-plugin-dbus-qt5
 Requires:   qt5-qtdeclarative-import-multimedia
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(sailfishsecrets)

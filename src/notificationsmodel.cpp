@@ -92,6 +92,23 @@ QHash<int, QByteArray> NotificationsModel::roleNames() const
     return roles;
 }
 
+// Same choice as tapping the item in NotificationsPage: like/repost uris
+// point at the like/repost record, so prefer the subject post, and fall
+// back to the author's profile.
+QString NotificationsModel::openTarget(const Item &item)
+{
+    const auto isPost = [](const QString &uri) {
+        return uri.contains(QLatin1String("/app.bsky.feed.post/"));
+    };
+    if (item.reason == QLatin1String("follow"))
+        return item.authorHandle;
+    if (isPost(item.reasonSubject))
+        return item.reasonSubject;
+    if (isPost(item.uri))
+        return item.uri;
+    return item.authorHandle;
+}
+
 NotificationsModel::Item NotificationsModel::parseItem(const QJsonObject &json)
 {
     Item item;
@@ -225,6 +242,7 @@ void NotificationsModel::poll()
             QString name;
             QString reason;
             QString text;
+            QString target;
             if (error.isEmpty()) {
                 const QJsonArray list = data.value(QStringLiteral("notifications")).toArray();
                 if (!list.isEmpty()) {
@@ -232,9 +250,10 @@ void NotificationsModel::poll()
                     name = item.authorName;
                     reason = item.reason;
                     text = item.text;
+                    target = openTarget(item);
                 }
             }
-            emit guard->alert(count, name, reason, text);
+            emit guard->alert(count, name, reason, text, target);
         });
     });
 }

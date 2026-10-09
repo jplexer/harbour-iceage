@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Nemo.DBus 2.0
 import Nemo.Notifications 1.0
 import harbour.iceage 1.0
 import "pages"
@@ -41,6 +42,14 @@ ApplicationWindow {
             systemNotification.body = text.length > 0 ? text
                     : qsTr("%1 unread notifications").arg(count)
             systemNotification.itemCount = count
+            systemNotification.remoteActions = [{
+                name: "default",
+                service: notificationAdaptor.service,
+                path: notificationAdaptor.path,
+                iface: notificationAdaptor.iface,
+                method: "openNotification",
+                arguments: [target]
+            }]
             systemNotification.publish()
         }
     }
@@ -49,6 +58,46 @@ ApplicationWindow {
         id: systemNotification
         appName: "Ice Age"
         appIcon: "harbour-iceage"
+    }
+
+    // Tapping the banner calls back in here. Sailjail lets the app own
+    // OrganizationName.ApplicationName on the session bus. Only works
+    // while the app is running, which is also the only time we post.
+    DBusAdaptor {
+        id: notificationAdaptor
+        service: "me.funnyna.harbour-iceage"
+        path: "/me/funnyna/iceage"
+        iface: "me.funnyna.iceage"
+        xml: '<interface name="me.funnyna.iceage">'
+             + '<method name="openNotification"><arg name="target" type="s" direction="in"/></method>'
+             + '</interface>'
+
+        function openNotification(target) {
+            app.activate()
+            app.openTarget(target)
+        }
+    }
+
+    // target: a post at:// uri, a handle/DID, or empty for the list
+    function openTarget(target) {
+        if (!blueskySession.loggedIn)
+            return
+        if (target.indexOf("at://") === 0) {
+            pageStack.push(Qt.resolvedUrl("pages/ThreadPage.qml"), {
+                session: blueskySession,
+                postUri: target
+            }, PageStackAction.Immediate)
+        } else if (target.length > 0) {
+            pageStack.push(Qt.resolvedUrl("pages/ProfilePage.qml"), {
+                session: blueskySession,
+                actor: target
+            }, PageStackAction.Immediate)
+        } else {
+            pageStack.push(Qt.resolvedUrl("pages/NotificationsPage.qml"), {
+                session: blueskySession,
+                notifications: notificationsModel
+            }, PageStackAction.Immediate)
+        }
     }
 
     initialPage: Component {
