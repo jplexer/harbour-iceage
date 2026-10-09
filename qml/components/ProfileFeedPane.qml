@@ -88,6 +88,28 @@ SilicaListView {
         }
     }
 
+    // Empty-state text sits in the footer so it lands right under the
+    // floating profile header. Lazy panes carry a "started" flag; don't
+    // claim emptiness before their first fetch has gone out.
+    footer: Item {
+        width: listView.width
+        height: emptyLabel.visible ? emptyLabel.height + 4 * Theme.paddingLarge : 0
+
+        InfoLabel {
+            id: emptyLabel
+            y: Theme.paddingLarge * 2
+            visible: listView.count === 0 && !listView.feed.loading
+                     && listView.feed.started !== false
+            text: {
+                switch (listView.feed.filter) {
+                case "posts_with_media": return qsTr("No media yet")
+                case "likes": return qsTr("No likes yet")
+                default: return qsTr("No posts yet")
+                }
+            }
+        }
+    }
+
     BusyIndicator {
         anchors.centerIn: parent
         size: BusyIndicatorSize.Large
