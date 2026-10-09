@@ -32,6 +32,7 @@ PackageIcon: https://github.com/jplexer/harbour-iceage/raw/main/icons/harbour-ic
 Links:
   Homepage: https://funnyna.me
   Bugtracker: https://github.com/jplexer/harbour-iceage/issues
+AIRating: C
 %endif
 
 
