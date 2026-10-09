@@ -82,6 +82,16 @@ CoverBackground {
     }
 
     CoverActionList {
+        enabled: blueskySession.loggedIn
+
+        CoverAction {
+            iconSource: "image://theme/icon-cover-new"
+            onTriggered: {
+                pageStack.push(Qt.resolvedUrl("../pages/ComposePage.qml"),
+                               { session: blueskySession }, PageStackAction.Immediate)
+                app.activate()
+            }
+        }
         CoverAction {
             iconSource: "image://theme/icon-cover-refresh"
             onTriggered: {

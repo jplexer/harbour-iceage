@@ -35,6 +35,13 @@ SilicaListView {
     PullDownMenu {
         busy: feed.loading
         MenuItem {
+            visible: feed.session.loggedIn && feed.profile.did === feed.session.did
+            text: qsTr("Settings")
+            onClicked: pageStack.push(Qt.resolvedUrl("../pages/SettingsPage.qml"), {
+                session: feed.session
+            })
+        }
+        MenuItem {
             visible: listView._otherProfile
             enabled: feed.profile.blockingUri !== "pending"
             text: feed.profile.blockingUri !== undefined

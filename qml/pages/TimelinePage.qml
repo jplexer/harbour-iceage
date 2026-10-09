@@ -10,11 +10,42 @@ Page {
     property TimelineModel timeline
     property NotificationsModel notifications
 
+    // Notifications live one swipe to the left. Pushing another page
+    // drops the attached page, so re-attach whenever we're back on top.
+    function attachNotifications() {
+        if (session.loggedIn && status === PageStatus.Active && !pageStack.nextPage(page)) {
+            pageStack.pushAttached(Qt.resolvedUrl("NotificationsPage.qml"), {
+                session: session,
+                notifications: notifications
+            })
+        }
+    }
+
+    onStatusChanged: attachNotifications()
+
+    // Catch up when the app comes back to the foreground after a while
+    property date _lastForeground: new Date()
+
+    Connections {
+        target: Qt.application
+        onStateChanged: {
+            if (Qt.application.state !== Qt.ApplicationActive || !session.loggedIn)
+                return
+            var now = new Date()
+            if (now - page._lastForeground > 5 * 60 * 1000)
+                timeline.loadNewer()
+            page._lastForeground = now
+        }
+    }
+
     Connections {
         target: session
         onLoggedInChanged: {
             if (session.loggedIn) {
                 timeline.refresh()
+                page.attachNotifications()
+            } else if (pageStack.nextPage(page)) {
+                pageStack.popAttached(page, PageStackAction.Immediate)
             }
         }
     }
@@ -24,9 +55,30 @@ Page {
         anchors.fill: parent
         model: timeline
 
-        header: PageHeader {
-            title: timeline.feedUri.length > 0 ? timeline.feedName : "Ice Age"
-            description: session.loggedIn ? "@" + session.handle : ""
+        // Tap the header to switch feeds
+        header: BackgroundItem {
+            width: listView.width
+            height: pageHeader.height
+            enabled: session.loggedIn
+            onClicked: pageStack.push(Qt.resolvedUrl("FeedsPage.qml"), {
+                session: session,
+                timeline: timeline
+            })
+
+            PageHeader {
+                id: pageHeader
+                title: !session.loggedIn ? "Ice Age"
+                       : timeline.feedUri.length > 0 ? timeline.feedName
+                       : qsTr("Following")
+                description: {
+                    if (!session.loggedIn)
+                        return ""
+                    var text = "@" + session.handle
+                    if (notifications.unreadCount > 0)
+                        text += " · " + qsTr("%1 new").arg(notifications.unreadCount)
+                    return text
+                }
+            }
         }
 
         PullDownMenu {
@@ -35,10 +87,6 @@ Page {
                 text: qsTr("Sign in")
                 visible: !session.loggedIn
                 onClicked: pageStack.push(Qt.resolvedUrl("LoginPage.qml"), { session: session })
-            }
-            MenuItem {
-                text: qsTr("Settings")
-                onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"), { session: session })
             }
             MenuItem {
                 text: qsTr("My account")
@@ -52,24 +100,6 @@ Page {
                 text: qsTr("Search")
                 visible: session.loggedIn
                 onClicked: pageStack.push(Qt.resolvedUrl("SearchPage.qml"), { session: session })
-            }
-            MenuItem {
-                text: qsTr("Feeds")
-                visible: session.loggedIn
-                onClicked: pageStack.push(Qt.resolvedUrl("FeedsPage.qml"), {
-                    session: session,
-                    timeline: timeline
-                })
-            }
-            MenuItem {
-                text: notifications.unreadCount > 0
-                      ? qsTr("Notifications (%1)").arg(notifications.unreadCount)
-                      : qsTr("Notifications")
-                visible: session.loggedIn
-                onClicked: pageStack.push(Qt.resolvedUrl("NotificationsPage.qml"), {
-                    session: session,
-                    notifications: notifications
-                })
             }
             MenuItem {
                 text: qsTr("New post")
