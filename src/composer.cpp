@@ -4,6 +4,7 @@
 #include <QDateTime>
 #include <QImage>
 #include <QJsonArray>
+#include <QLocale>
 #include <QPointer>
 #include <QRegularExpression>
 #include <QUrl>
@@ -13,6 +14,14 @@
 #include "tagstore.h"
 
 namespace {
+
+// Primary language of the system locale, e.g. "de" for de_DE, so posts
+// show up in language-filtered feeds. Empty when there's nothing useful.
+QString postLanguage()
+{
+    const QString lang = QLocale::system().bcp47Name().section(QLatin1Char('-'), 0, 0);
+    return lang == QLatin1String("C") ? QString() : lang;
+}
 
 int byteOffset(const QString &text, int charOffset)
 {
@@ -303,6 +312,9 @@ void Composer::sendRecord(const QString &text, const ReplyRefs &reply,
     const QJsonArray facets = detectFacets(text, mentionDids);
     if (!facets.isEmpty())
         record.insert(QStringLiteral("facets"), facets);
+    const QString lang = postLanguage();
+    if (!lang.isEmpty())
+        record.insert(QStringLiteral("langs"), QJsonArray{lang});
 
     if (!reply.quoteUri.isEmpty()) {
         QJsonObject ref;
