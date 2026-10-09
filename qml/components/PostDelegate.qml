@@ -283,8 +283,8 @@ ListItem {
                     anchors.fill: parent
                     onPressAndHold: postItem.showMenu()
                     onClicked: pageStack.push(Qt.resolvedUrl("../pages/ImagePage.qml"), {
-                        source: modelData.fullsize,
-                        altText: modelData.alt
+                        images: images,
+                        currentIndex: index
                     })
                 }
             }
