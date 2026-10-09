@@ -1,0 +1,14 @@
+* Sat Oct 10 2026 Joshua Jun <joshuajun@proton.me> 0.2-1
+- Slimmer timeline menu: swipe left for notifications, tap the header to switch feeds
+- Settings moved to the pull-down menu on your own profile
+- New post action on the cover
+- Timeline catches up when returning to the app
+- Media and Likes tabs on profiles, with empty-state text
+- Swipe between images in the full-screen viewer
+- Choose who can reply to new posts
+- Posts are tagged with your system language
+- Tapping a notification banner opens the post or profile
+- Sign-in can be cancelled and times out instead of spinning forever
+
+* Mon Jul 20 2026 Joshua Jun <joshuajun@proton.me> 0.1-1
+- Initial release
