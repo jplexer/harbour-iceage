@@ -57,6 +57,7 @@ Page {
 
         // Tap the header to switch feeds
         header: BackgroundItem {
+            id: headerItem
             width: listView.width
             height: pageHeader.height
             enabled: session.loggedIn
@@ -67,6 +68,10 @@ Page {
 
             PageHeader {
                 id: pageHeader
+                // With an attached page, PageHeader adds its own mouse
+                // area that navigates forward, stealing our tap
+                interactive: false
+                highlighted: headerItem.highlighted
                 title: !session.loggedIn ? "Ice Age"
                        : timeline.feedUri.length > 0 ? timeline.feedName
                        : qsTr("Following")
