@@ -10,7 +10,8 @@ class AuthorFeedModel : public AbstractPostModel
     Q_OBJECT
     Q_PROPERTY(QString actor READ actor WRITE setActor NOTIFY actorChanged)
     Q_PROPERTY(QVariantMap profile READ profile NOTIFY profileChanged)
-    // getAuthorFeed filter: posts_no_replies (default) or posts_with_replies
+    // getAuthorFeed filter: posts_no_replies (default), posts_with_replies
+    // or posts_with_media; "likes" switches to getActorLikes (own account)
     Q_PROPERTY(QString filter READ filter WRITE setFilter NOTIFY filterChanged)
 public:
     explicit AuthorFeedModel(QObject *parent = nullptr);

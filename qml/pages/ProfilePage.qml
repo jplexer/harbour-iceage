@@ -49,15 +49,50 @@ Page {
 
     AuthorFeedModel {
         id: feedReplies
+        property bool started: false
         session: page.session
         actor: page.actor
         filter: "posts_with_replies"
     }
 
-    Component.onCompleted: {
-        feedPosts.refresh()
-        feedReplies.refresh()
+    AuthorFeedModel {
+        id: feedMedia
+        property bool started: false
+        session: page.session
+        actor: page.actor
+        filter: "posts_with_media"
     }
+
+    // getActorLikes only works for the signed-in account
+    AuthorFeedModel {
+        id: feedLikes
+        property bool started: false
+        session: page.session
+        actor: page.actor
+        filter: "likes"
+    }
+
+    readonly property bool _ownProfile: session.loggedIn
+                                        && (actor === session.did
+                                            || actor === session.handle
+                                            || feedPosts.profile.did === session.did)
+    readonly property var _panes: _ownProfile
+                                  ? [feedPosts, feedReplies, feedMedia, feedLikes]
+                                  : [feedPosts, feedReplies, feedMedia]
+    readonly property var _tabTitles: _ownProfile
+                                      ? [qsTr("Posts"), qsTr("Replies"), qsTr("Media"), qsTr("Likes")]
+                                      : [qsTr("Posts"), qsTr("Replies"), qsTr("Media")]
+
+    // The other tabs fetch the first time they're shown
+    function _startPane(index) {
+        var feed = _panes[index]
+        if (feed && feed !== feedPosts && !feed.started) {
+            feed.started = true
+            feed.refresh()
+        }
+    }
+
+    Component.onCompleted: feedPosts.refresh()
 
     Item {
         id: headerArea
@@ -183,10 +218,10 @@ Page {
                     anchors.fill: parent
 
                     Repeater {
-                        model: [qsTr("Posts"), qsTr("Posts & replies")]
+                        model: page._tabTitles
 
                         BackgroundItem {
-                            width: parent.width / 2
+                            width: parent.width / page._tabTitles.length
                             height: parent.height
                             onClicked: pager.currentIndex = index
 
@@ -216,7 +251,7 @@ Page {
     }
 
     // Horizontal, non-circular pager: swipe between Posts and
-    // Posts & replies, rubber-banding at the right end.
+    // the other tabs, rubber-banding at the right end.
     ListView {
         id: pager
         anchors.fill: parent
@@ -227,7 +262,8 @@ Page {
         highlightMoveDuration: 300
         boundsBehavior: Flickable.DragOverBounds
         clip: true
-        model: [feedPosts, feedReplies]
+        model: page._panes
+        onCurrentIndexChanged: page._startPane(currentIndex)
 
         // Swiping right past the first pane navigates back
         onDraggingChanged: {

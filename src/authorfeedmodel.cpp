@@ -253,13 +253,18 @@ void AuthorFeedModel::fetchFeed(bool reset)
     QVariantMap params;
     params.insert(QStringLiteral("actor"), m_actor);
     params.insert(QStringLiteral("limit"), 50);
-    params.insert(QStringLiteral("filter"), m_filter);
+    // Likes come from a separate endpoint (own account only) with the
+    // same feed shape
+    const bool likes = m_filter == QLatin1String("likes");
+    if (!likes)
+        params.insert(QStringLiteral("filter"), m_filter);
     if (!reset)
         params.insert(QStringLiteral("cursor"), m_cursor);
 
     QPointer<AuthorFeedModel> guard(this);
     const QString filter = m_filter;
-    session()->getAuthorized(QStringLiteral("app.bsky.feed.getAuthorFeed"), params,
+    session()->getAuthorized(likes ? QStringLiteral("app.bsky.feed.getActorLikes")
+                                   : QStringLiteral("app.bsky.feed.getAuthorFeed"), params,
                              [guard, reset, filter](const QJsonObject &data, const QString &error) {
         if (!guard)
             return;
