@@ -44,6 +44,8 @@ public:
     Q_INVOKABLE void loginWithHandle(const QString &handle);
     // OAuth against the currently configured service (advanced/manual path).
     Q_INVOKABLE void loginOAuth();
+    // Abandons a sign-in in progress (any method) and clears busy.
+    Q_INVOKABLE void cancelLogin();
     // Restores a previous session from stored credentials, if any.
     Q_INVOKABLE void resume();
     Q_INVOKABLE void logout();
@@ -103,6 +105,7 @@ private:
     QList<std::function<void(bool)> > m_refreshCallbacks;
     bool m_loggedIn = false;
     bool m_busy = false;
+    int m_loginAttempt = 0; // bumped by cancelLogin; stale replies compare against it
 };
 
 #endif // SESSION_H

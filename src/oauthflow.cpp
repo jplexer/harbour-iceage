@@ -8,6 +8,7 @@
 #include <QNetworkRequest>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
 
@@ -41,6 +42,13 @@ const QString OAuthFlow::scope()
 OAuthFlow::OAuthFlow(QObject *parent)
     : QObject(parent)
 {
+    // An abandoned browser login would otherwise leave the caller busy
+    // forever; the listener is the only thing still waiting by then
+    m_browserTimeout.setSingleShot(true);
+    m_browserTimeout.setInterval(5 * 60 * 1000);
+    connect(&m_browserTimeout, &QTimer::timeout, this, [this]() {
+        fail(QStringLiteral("Sign-in timed out"));
+    });
 }
 
 void OAuthFlow::fail(const QString &message)
@@ -52,12 +60,14 @@ void OAuthFlow::fail(const QString &message)
 
 void OAuthFlow::cancel()
 {
+    ++m_generation; // drop replies still in flight
     stopListener();
     m_active = false;
 }
 
 void OAuthFlow::stopListener()
 {
+    m_browserTimeout.stop();
     if (m_server) {
         m_server->close();
         m_server->deleteLater();
@@ -70,6 +80,7 @@ void OAuthFlow::start(const QString &serviceUrl, DpopKey *key, const QString &lo
     if (m_active)
         return;
     m_active = true;
+    ++m_generation;
     m_key = key;
     m_loginHint = loginHint;
     m_dpopNonce.clear();
@@ -79,9 +90,12 @@ void OAuthFlow::start(const QString &serviceUrl, DpopKey *key, const QString &lo
 void OAuthFlow::discoverAuthServer(const QString &serviceUrl)
 {
     const QUrl url(serviceUrl + QStringLiteral("/.well-known/oauth-protected-resource"));
+    const int generation = m_generation;
     QNetworkReply *reply = m_nam.get(QNetworkRequest(url));
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, generation]() {
         reply->deleteLater();
+        if (generation != m_generation)
+            return;
         const QJsonObject data = parseJson(reply->readAll());
         const QJsonArray servers = data.value(QStringLiteral("authorization_servers")).toArray();
         if (servers.isEmpty()) {
@@ -96,9 +110,12 @@ void OAuthFlow::discoverAuthServer(const QString &serviceUrl)
 void OAuthFlow::fetchAuthServerMetadata()
 {
     const QUrl url(m_issuer + QStringLiteral("/.well-known/oauth-authorization-server"));
+    const int generation = m_generation;
     QNetworkReply *reply = m_nam.get(QNetworkRequest(url));
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, generation]() {
         reply->deleteLater();
+        if (generation != m_generation)
+            return;
         const QJsonObject data = parseJson(reply->readAll());
         m_authEndpoint = data.value(QStringLiteral("authorization_endpoint")).toString();
         m_tokenEndpoint = data.value(QStringLiteral("token_endpoint")).toString();
@@ -161,6 +178,7 @@ void OAuthFlow::pushAuthorizationRequest()
         query.addQueryItem(QStringLiteral("request_uri"), requestUri);
         url.setQuery(query);
         QDesktopServices::openUrl(url);
+        m_browserTimeout.start();
     });
 }
 
@@ -186,8 +204,8 @@ void OAuthFlow::onListenerConnection()
         socket->flush();
         socket->disconnectFromHost();
 
-        if (url.path() != QLatin1String("/callback"))
-            return; // favicon etc.
+        if (url.path() != QLatin1String("/callback") || !m_active)
+            return; // favicon etc., or the flow was cancelled
 
         const QUrlQuery query(url);
         stopListener();
@@ -221,6 +239,7 @@ void OAuthFlow::refresh(const QString &tokenEndpoint, const QString &refreshToke
     if (m_active)
         return;
     m_active = true;
+    ++m_generation;
     m_key = key;
     m_tokenEndpoint = tokenEndpoint;
 
@@ -262,10 +281,13 @@ void OAuthFlow::postWithDpop(const QString &url, const QJsonObject &form, bool r
     request.setRawHeader("DPoP",
                          m_key->proof(QStringLiteral("POST"), url, m_dpopNonce).toLatin1());
 
+    const int generation = m_generation;
     QNetworkReply *reply = m_nam.post(request, formEncode(form));
     connect(reply, &QNetworkReply::finished, this,
-            [this, reply, url, form, retried, done]() {
+            [this, reply, url, form, retried, done, generation]() {
         reply->deleteLater();
+        if (generation != m_generation)
+            return;
         const int status =
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         const QByteArray nonce = reply->rawHeader("DPoP-Nonce");

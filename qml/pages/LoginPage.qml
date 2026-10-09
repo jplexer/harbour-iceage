@@ -17,6 +17,14 @@ Page {
         onLoginError: errorLabel.text = message
     }
 
+    // Backing out mid-login abandons it rather than leaving the
+    // timeline spinning behind us. This page pushes nothing, so leaving it
+    // always means it's being popped.
+    onStatusChanged: {
+        if (status === PageStatus.Deactivating && !session.loggedIn)
+            session.cancelLogin()
+    }
+
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: column.height
@@ -68,6 +76,13 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter
                 size: BusyIndicatorSize.Medium
                 running: session.busy
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Cancel")
+                visible: session.busy
+                onClicked: session.cancelLogin()
             }
 
             Label {

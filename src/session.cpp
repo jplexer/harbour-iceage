@@ -93,8 +93,13 @@ void Session::login(const QString &identifier, const QString &appPassword)
     QJsonObject body;
     body.insert(QStringLiteral("identifier"), identifier.trimmed());
     body.insert(QStringLiteral("password"), appPassword);
+    const int attempt = m_loginAttempt;
     QNetworkReply *reply = m_client.post(QStringLiteral("com.atproto.server.createSession"), body);
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, attempt]() {
+        if (attempt != m_loginAttempt) {
+            reply->deleteLater();
+            return;
+        }
         QString error;
         const QJsonObject data = XrpcClient::parseReply(reply, &error);
         setBusy(false);
@@ -146,8 +151,13 @@ void Session::loginWithHandle(const QString &handle)
     QUrlQuery query;
     query.addQueryItem(QStringLiteral("handle"), normalized);
     url.setQuery(query);
+    const int attempt = m_loginAttempt;
     QNetworkReply *reply = m_nam.get(QNetworkRequest(url));
-    connect(reply, &QNetworkReply::finished, this, [this, reply, normalized]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, normalized, attempt]() {
+        if (attempt != m_loginAttempt) {
+            reply->deleteLater();
+            return;
+        }
         QString error;
         const QJsonObject data = XrpcClient::parseReply(reply, &error);
         const QString did = data.value(QStringLiteral("did")).toString();
@@ -175,8 +185,13 @@ void Session::resolvePds(const QString &did, const QString &handle)
         return;
     }
 
+    const int attempt = m_loginAttempt;
     QNetworkReply *reply = m_nam.get(QNetworkRequest(url));
-    connect(reply, &QNetworkReply::finished, this, [this, reply, handle]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, handle, attempt]() {
+        if (attempt != m_loginAttempt) {
+            reply->deleteLater();
+            return;
+        }
         QString error;
         const QJsonObject doc = XrpcClient::parseReply(reply, &error);
         QString pds;
@@ -205,6 +220,15 @@ void Session::loginOAuth()
         return;
     setBusy(true);
     startOAuth(QString());
+}
+
+void Session::cancelLogin()
+{
+    if (!m_busy || m_loggedIn)
+        return;
+    ++m_loginAttempt;
+    m_oauth.cancel();
+    setBusy(false);
 }
 
 void Session::startOAuth(const QString &loginHint)
@@ -336,6 +360,10 @@ void Session::logout()
     emit handleChanged();
     emit didChanged();
     setLoggedIn(false);
+    // cancel() above dropped any OAuth refresh in flight; release its
+    // waiters instead of leaving the queue stuck for the next login
+    if (!m_refreshCallbacks.isEmpty())
+        finishRefresh(false);
 }
 
 // ---- token refresh ---------------------------------------------------------

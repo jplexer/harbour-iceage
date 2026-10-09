@@ -5,6 +5,7 @@
 #include <QNetworkAccessManager>
 #include <QObject>
 #include <QString>
+#include <QTimer>
 
 #include <functional>
 
@@ -31,6 +32,8 @@ public:
     void start(const QString &serviceUrl, DpopKey *key,
                const QString &loginHint = QString());
     void refresh(const QString &tokenEndpoint, const QString &refreshToken, DpopKey *key);
+    // Abandons the flow; replies still in flight are ignored and nothing
+    // is emitted.
     void cancel();
 
 signals:
@@ -70,6 +73,8 @@ private:
     QString m_state;
     QString m_verifier;
     QString m_dpopNonce;
+    QTimer m_browserTimeout;
+    int m_generation = 0; // bumped per flow; stale replies compare against it
     bool m_active = false;
 };
 
